@@ -1,0 +1,1120 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#e7e1d3">
+  <title>未名者档案：雾钟镇调查</title>
+  <style>
+    :root {
+      --paper:#e7e1d3; --paper-light:#f2ede2; --paper-dark:#d4cbb8;
+      --ink:#211f1b; --ink-soft:#4b4840; --ink-faint:#817b6d;
+      --rule:#8c8576; --red:#713d36; --shadow:rgba(30,28,24,.16);
+      --serif:Georgia,"Noto Serif SC","Songti SC",serif;
+      --hatch:repeating-linear-gradient(132deg,rgba(32,30,26,.10) 0 1px,transparent 1px 5px);
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:var(--paper); font-family:var(--serif); }
+    button { color:inherit; font:inherit; }
+    .page { max-width:1510px; margin:0 auto; padding:18px clamp(12px,2.5vw,34px) 38px; }
+    html,body { width:100%; height:100%; overflow:hidden; }
+    .page { display:grid; place-items:center; width:100%; max-width:none; height:100dvh; min-height:0; margin:0; padding:0; position:relative; overflow:hidden; background:#292720; }
+    .game-screen { position:relative; width:min(100vw,177.7778dvh); height:min(100dvh,56.25vw); aspect-ratio:16/9; overflow:hidden; background:#ddd6c7; box-shadow:0 12px 46px rgba(0,0,0,.42); }
+    .time-hud { position:absolute; z-index:20; top:14px; left:16px; display:grid; gap:3px; min-width:112px; max-width:min(300px,38vw); padding:7px 10px; border:1px solid var(--ink); background:rgba(242,237,226,.94); box-shadow:2px 2px 0 var(--shadow); font-size:11px; line-height:1.35; }
+    .time-hud strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; letter-spacing:.04em; }
+    .time-hud span { color:var(--ink-soft); font-size:10px; }
+    .system-buttons { position:absolute; z-index:30; right:16px; bottom:15px; display:flex; align-items:center; gap:5px; }
+    .system-button,.restart { border:1px solid var(--ink); background:rgba(242,237,226,.96); padding:7px 10px; cursor:pointer; font-size:10px; box-shadow:2px 2px 0 var(--shadow); white-space:nowrap; }
+    .system-button:hover,.system-button.active,.restart:hover,.quiet-button:hover { background:var(--ink); color:var(--paper-light); }
+    .system-button:hover,.system-button.active { background:var(--ink); color:var(--paper-light); }
+    .intro-row { display:none; }
+    .panel { border:1px solid var(--ink); background:var(--paper-light); box-shadow:4px 4px 0 var(--shadow); position:relative; }
+    .panel:after { content:""; position:absolute; inset:4px; border:1px solid rgba(33,31,27,.18); pointer-events:none; }
+    .panel-inner { position:relative; z-index:1; padding:15px 17px; }
+    .eyebrow { font:10px/1.4 Arial,sans-serif; letter-spacing:.2em; text-transform:uppercase; color:var(--red); font-weight:bold; }
+    h2,h3,p { margin-top:0; }
+    .status-panel { background:rgba(242,237,226,.91); }
+    .status-panel .panel-inner { padding:10px 12px; }
+    .status-panel h2 { font-size:15px; margin:3px 0; font-weight:600; }
+    .status-panel .eyebrow { font-size:8px; }
+    .status-panel .dayline { display:none; }
+    .status-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px 10px; }
+    .meter { min-width:0; }
+    .meter-head { display:flex; justify-content:space-between; gap:8px; font-size:11px; margin-bottom:4px; }
+    .meter-head span:last-child { color:var(--ink-soft); font-variant-numeric:tabular-nums; }
+    .track { height:5px; border:1px solid var(--rule); background:var(--paper-dark); }
+    .fill { height:100%; width:0; background:var(--ink); transition:width .25s; }
+    .fill.warn { background:var(--red); }
+    .player-meta { display:flex; flex-wrap:wrap; gap:5px; align-items:center; margin-top:7px; font-size:10px; }
+    .seal { border:1px solid var(--rule); padding:4px 7px; background:var(--paper); }
+    .faction-select { border:0; border-bottom:1px solid var(--ink); background:transparent; padding:3px 16px 3px 4px; font:11px var(--serif); }
+    .time-panel { margin-top:7px; border-top:1px dotted var(--rule); padding-top:6px; display:flex; align-items:center; flex-wrap:wrap; gap:4px; }
+    .period { display:inline-flex; gap:4px; align-items:center; font-size:11px; color:var(--ink-faint); }
+    .period b { color:var(--ink); }
+    .quiet-button { border:1px solid var(--ink); background:transparent; cursor:pointer; padding:4px 6px; font-size:10px; }
+    .story-panel { background:rgba(242,237,226,.93); }
+    .story-panel .panel-inner { padding:11px 13px; }
+    .chapter-line { display:flex; align-items:center; gap:9px; }
+    .chapter-number { font-size:12px; border:1px solid var(--ink); padding:4px 7px; letter-spacing:.08em; }
+    .story-panel h2 { font-size:17px; margin:5px 0 4px; font-weight:600; }
+    .story-lead { color:var(--ink-soft); font-size:10px; line-height:1.5; margin:0; max-height:45px; overflow:hidden; }
+    .goal-row { display:grid; grid-template-columns:1fr 1fr; gap:4px; margin-top:8px; }
+    .goal { border:1px solid var(--rule); background:#e9e3d6; padding:4px 5px; font-size:9px; }
+    .goal.done { text-decoration:line-through; color:var(--ink-faint); background:var(--paper-dark); }
+    .goal.current { border-color:var(--red); box-shadow:inset 0 -2px var(--red); }
+    .jump { margin-top:7px; border:0; border-bottom:1px solid var(--ink); background:transparent; padding:2px 0; cursor:pointer; font:10px var(--serif); }
+    #quest-progress { margin:6px 0 0; color:var(--red); font-size:9px; line-height:1.4; }
+    .workbench { position:static; display:block; }
+    .section-title { display:flex; justify-content:space-between; gap:8px; align-items:baseline; border-bottom:1px solid var(--ink); padding-bottom:8px; margin-bottom:9px; }
+    .section-title h3 { margin:0; font-size:16px; font-weight:600; }
+    .section-title small { color:var(--ink-faint); font:10px Arial,sans-serif; letter-spacing:.08em; }
+    .world-legend { font-size:10px; color:var(--ink-soft); }
+    .world-window { display:none; }
+    .world-window.open { display:block; position:fixed; z-index:201; width:min(90vw,160vh); height:min(90vh,50.625vw); left:50%; top:50%; transform:translate(-50%,-50%); overflow:auto; }
+    .world-window .section-title,.notebook .section-title,.supply-shop-window .section-title { padding-right:78px; }
+    .world-map { min-height:min(66vh,600px); position:relative; overflow:hidden; border:1px solid var(--rule); background-color:#ded7c8; background-image:var(--hatch); }
+    .world-map svg { position:absolute; width:100%; height:100%; inset:0; opacity:.77; }
+    .map-land { fill:none; stroke:#716b5e; stroke-width:2; }
+    .map-road { fill:none; stroke:#ede7d9; stroke-width:9; }
+    .map-road-edge { fill:none; stroke:#8e8677; stroke-width:1; stroke-dasharray:3 6; }
+    .map-water { fill:#c8c1b1; stroke:#766f62; stroke-width:1.4; }
+    .place-pin { position:absolute; z-index:2; transform:translate(-50%,-50%); width:118px; padding:8px 7px 7px; border:1px solid var(--ink); background:rgba(242,237,226,.95); box-shadow:2px 2px 0 var(--shadow); text-align:center; cursor:pointer; font-size:11px; line-height:1.25; }
+    .place-pin .pin-symbol { display:block; font-size:17px; line-height:1.2; margin-bottom:3px; }
+    .place-pin.current { background:var(--ink); color:var(--paper-light); outline:2px solid var(--paper-light); outline-offset:2px; }
+    .place-pin.locked { opacity:.55; cursor:not-allowed; filter:grayscale(1); }
+    .place-pin:not(.locked):hover { transform:translate(-50%,-57%); }
+    .map-caption { position:absolute; z-index:1; bottom:9px; left:10px; font-size:9px; letter-spacing:.12em; color:var(--ink-soft); }
+    .scene-panel { position:absolute; z-index:1; inset:0; border:0; box-shadow:none; background:transparent; }
+    .scene-panel:after { display:none; }
+    .scene-panel .panel-inner { position:absolute; inset:0; padding:0; pointer-events:none; }
+    .scene-panel .panel-inner > * { pointer-events:auto; }
+    .scene-art { position:absolute; inset:0; overflow:hidden; background:#ddd6c7; }
+    .scene-art svg { display:block; width:100%; height:100%; }
+    .scene-art .inkline { fill:none; stroke:#282620; stroke-width:2; }
+    .scene-art .fine { fill:none; stroke:#4c4941; stroke-width:1; }
+    .scene-art .solid { fill:#282620; stroke:#282620; stroke-width:1; }
+    .scene-art .wash { fill:#c7bead; stroke:#282620; stroke-width:1.4; }
+    .scene-art .hatchfill { fill:url(#scene-hatch); stroke:#282620; stroke-width:1; }
+    .mini-map { position:absolute; z-index:8; top:14px; right:14px; width:272px; height:166px; overflow:hidden; border:2px solid var(--ink); box-shadow:3px 3px 0 var(--shadow); background:rgba(232,226,213,.97); }
+    .mini-map svg { position:absolute; inset:0; width:100%; height:100%; }
+    .street-line { fill:none; stroke:#f4efe3; stroke-width:18; stroke-linecap:round; }
+    .street-edge { fill:none; stroke:#857d6e; stroke-width:1.5; stroke-dasharray:3 5; }
+    .mini-location-pin { position:absolute; z-index:2; transform:translate(-50%,-50%); max-width:98px; padding:4px 6px; border:1px solid var(--ink); background:rgba(242,237,226,.96); box-shadow:1px 1px 0 var(--shadow); cursor:pointer; font-size:8px; line-height:1.15; white-space:nowrap; }
+    .mini-location-pin.current { background:var(--ink); color:var(--paper-light); }
+    .mini-location-pin.locked { border-style:dashed; color:var(--ink-faint); }
+    .mini-location-pin:not(:disabled):hover { background:var(--red); color:var(--paper-light); }
+    .mini-location-pin:disabled { cursor:not-allowed; opacity:.65; }
+    .mini-caption { position:absolute; z-index:3; top:4px; left:5px; padding:2px 4px; font-size:8px; letter-spacing:.08em; color:var(--ink-faint); background:rgba(242,237,226,.9); }
+    .spot-list { position:absolute; inset:0; pointer-events:none; }
+    .spot-button { position:absolute; transform:translate(-50%,-50%); display:flex; align-items:center; gap:6px; text-align:left; background:rgba(242,237,226,.92); border:1px solid var(--ink); border-radius:18px; cursor:pointer; padding:5px 9px 5px 6px; min-height:31px; font-size:10px; box-shadow:2px 2px 0 var(--shadow); pointer-events:auto; }
+    .spot-button:hover { border-color:var(--ink); background:var(--ink); color:var(--paper-light); }
+    .spot-button.done { color:var(--ink-faint); background:#ded8ca; }
+    .spot-button.done:hover { background:var(--ink); color:var(--paper-light); }
+    .spot-button.repeatable { border-style:dashed; border-color:var(--red); }
+    .spot-button:disabled { cursor:default; }
+    .spot-glyph { font-size:14px; width:18px; text-align:center; }
+    .interaction { position:absolute; z-index:10; left:18px; bottom:17px; width:min(64vw,760px); min-height:112px; max-height:28vh; overflow:auto; padding:11px 15px; border:1px solid var(--ink); border-left:4px solid var(--ink); background:rgba(242,237,226,.96); box-shadow:4px 4px 0 var(--shadow); }
+    .interaction .who { font-size:10px; color:var(--red); letter-spacing:.13em; margin-bottom:4px; }
+    .interaction p { font-size:12px; line-height:1.7; margin:0; }
+    .choice-list { display:grid; gap:5px; margin-top:8px; }
+    .choice { text-align:left; border:1px solid var(--rule); background:var(--paper-light); padding:7px 8px; cursor:pointer; font-size:11px; }
+    .choice:hover { border-color:var(--ink); }
+    .choice:disabled { opacity:.7; border-style:dashed; background:#e3ddcf; color:var(--ink-soft); cursor:not-allowed; }
+    .notebook { display:none; }
+    .notebook.open { display:block; position:fixed; z-index:201; width:min(86vw,1320px); height:min(86vh,740px); left:50%; top:50%; transform:translate(-50%,-50%); overflow:auto; }
+    .notebook > .panel-inner { display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:10px; align-content:start; padding:14px; writing-mode:horizontal-tb; text-orientation:mixed; }
+    .notebook .status-panel,.notebook .story-panel,.notebook .notebook-block { writing-mode:horizontal-tb; text-orientation:mixed; }
+    .notebook .section-title { grid-column:1/-1; margin-bottom:0; }
+    .notebook .story-panel { grid-column:span 5; min-width:0; box-shadow:none; }
+    .notebook .story-panel .panel-inner { display:block; padding:10px 12px; }
+    .notebook .story-panel h2 { font-size:16px; }
+    .notebook .story-panel .story-lead { max-height:none; font-size:10px; line-height:1.55; }
+    .notebook .story-panel .goal-row { grid-template-columns:1fr 1fr; gap:5px; }
+    .notebook .story-panel .goal { min-height:34px; display:flex; align-items:center; font-size:10px; line-height:1.35; }
+    .notebook .story-panel #quest-progress { margin:7px 0 0; font-size:10px; line-height:1.5; }
+    .notebook .story-panel .jump { margin:6px 0 0; }
+    .notebook .status-panel { grid-column:span 7; width:auto; min-width:0; box-shadow:none; }
+    .notebook .status-panel .panel-inner { display:block; padding:10px 12px; }
+    .notebook .status-panel .dayline { display:none; }
+    .notebook .status-grid { gap:8px 14px; }
+    .notebook .meter-head { font-size:11px; }
+    .notebook .time-panel { gap:5px; }
+    .notebook .time-panel .quiet-button { padding:5px 7px; }
+    #inventory-block { grid-column:1/-1; }
+    #log-block { grid-column:1/-1; }
+    .notebook-block { margin:0; min-width:0; border:1px solid var(--rule); padding:9px; background:rgba(242,237,226,.78); }
+    .notebook-label { border-bottom:1px dotted var(--rule); padding-bottom:5px; margin-bottom:6px; font:10px Arial,sans-serif; letter-spacing:.16em; color:var(--red); text-transform:uppercase; }
+    .inventory { display:flex; flex-wrap:wrap; gap:5px; min-height:28px; }
+    .item { background:#e3ddcf; border:1px solid var(--rule); padding:4px 6px; font-size:10px; }
+    .item .qty { color:var(--ink-faint); }
+    .log { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:22px; max-height:150px; overflow:auto; padding:0 0 0 16px; margin:0; font-size:10px; line-height:1.55; }
+    .log li { padding:2px 4px 5px 0; border-bottom:1px dotted rgba(140,133,118,.55); }
+    .log time { color:var(--red); font-variant-numeric:tabular-nums; }
+    .finale { display:none; position:absolute; z-index:120; inset:0; margin:0; padding:10vh 12vw; background:rgba(28,26,22,.78); }
+    .finale.visible { display:block; }
+    .finale-card { border:3px double var(--ink); background:var(--paper-light); padding:22px; text-align:center; box-shadow:5px 5px 0 var(--shadow); }
+    .finale-card h2 { margin:8px 0; font-size:27px; }
+    .finale-card p { margin:0 auto; max-width:780px; font-size:13px; line-height:1.8; }
+    .archive-board { display:none; }
+    .archive-board.open { display:block; position:fixed; z-index:201; width:min(96vw,163.56vh); height:min(92vh,54vw); left:50%; top:50%; transform:translate(-50%,-50%); overflow:auto; margin:0; padding:10px 13px; border:1px solid var(--ink); background:var(--paper); box-shadow:0 8px 38px rgba(0,0,0,.35); }
+    .archive-board.shop-view { width:min(820px,92vw); height:min(76vh,680px); }
+    .board-heading { display:flex; align-items:end; justify-content:space-between; gap:12px; margin:0 2px 9px; }
+    .archive-board .board-heading { padding-right:78px; }
+    .board-heading h2 { margin:0; font-size:19px; }
+    .board-heading p { margin:0; color:var(--ink-faint); font:10px Arial,sans-serif; }
+    .board-frame { border:1px solid var(--ink); background:var(--paper-dark); padding:5px; box-shadow:4px 4px 0 var(--shadow); }
+    #truth-frame { display:block; width:100%; height:calc(min(92vh,54vw) - 94px); min-height:430px; border:0; background:var(--paper); }
+    .archive-board.shop-view #truth-frame { height:calc(min(76vh,680px) - 92px); min-height:300px; }
+    .supply-shop-window { display:none; }
+    .supply-shop-window.open { display:block; position:fixed; z-index:201; width:min(92vw,720px); max-height:84vh; left:50%; top:50%; transform:translate(-50%,-50%); overflow:auto; }
+    .supply-shop-window .panel-inner { padding:17px; }
+    .supply-intro { margin:0 0 12px; color:var(--ink-soft); font-size:11px; line-height:1.6; }
+    .supply-balance { margin:0 0 10px; font-size:11px; }
+    .supply-stock { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px; }
+    .supply-item { display:flex; flex-direction:column; min-width:0; gap:6px; padding:10px; border:1px solid var(--rule); background:rgba(242,237,226,.82); }
+    .supply-item h4 { margin:0; font-size:13px; }
+    .supply-item p { flex:1; margin:0; color:var(--ink-soft); font-size:10px; line-height:1.5; }
+    .supply-item button { border:1px solid var(--ink); padding:6px; background:transparent; cursor:pointer; font-size:10px; }
+    .supply-item button:hover:not(:disabled) { color:var(--paper-light); background:var(--ink); }
+    .supply-item button:disabled { opacity:.5; cursor:not-allowed; }
+    .supply-status { min-height:17px; margin:10px 0 0; color:var(--red); font-size:10px; }
+    .window-close { float:right; border:1px solid var(--ink); background:transparent; padding:5px 9px; cursor:pointer; font-size:11px; }
+    .world-window .window-close,.notebook .window-close,.archive-board .window-close,.supply-shop-window .window-close { position:absolute; top:11px; right:12px; z-index:5; float:none; }
+    .footer { display:none; }
+    .window-shade { position:fixed; z-index:200; inset:0; background:rgba(26,24,21,.68); }
+    .toast { position:fixed; z-index:300; right:18px; bottom:18px; max-width:min(380px,calc(100vw - 36px)); background:var(--ink); color:var(--paper-light); border:1px solid var(--paper-light); padding:10px 13px; box-shadow:3px 3px 0 var(--shadow); font-size:12px; opacity:0; transform:translateY(8px); transition:.2s; pointer-events:none; }
+    .toast.show { opacity:1; transform:translateY(0); }
+    @media(max-width:1050px) {
+      .notebook > .panel-inner { display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:9px; }
+      .notebook .section-title { grid-column:1/-1; margin-bottom:-4px; }
+      .notebook-block { margin-top:0; }
+    }
+    @media(max-width:700px) {
+      .page { padding:0; height:100dvh; }
+      .time-hud { top:7px; left:7px; min-width:88px; padding:5px 6px; font-size:9px; }
+      .time-hud { max-width:min(50vw,230px); }
+      .time-hud strong { font-size:10px; }
+      .time-hud span { font-size:8px; }
+      .system-buttons { right:7px; bottom:7px; gap:3px; }
+      .system-button,.restart { padding:5px 6px; font-size:8px; }
+      .intro-row,.workbench { display:block; }
+      .status-panel .panel-inner { padding:7px 8px; }
+      .status-panel .meter-head { font-size:9px; }
+      .status-panel .player-meta { gap:3px; font-size:8px; }
+      .status-panel .seal { padding:3px 4px; }
+      .time-panel { gap:3px; }
+      .time-panel .quiet-button { font-size:8px; padding:3px 4px; }
+      .story-panel .panel-inner { padding:7px 8px; }
+      .story-panel h2 { font-size:13px; }
+      .story-lead { font-size:8px; max-height:35px; }
+      .chapter-number { padding:2px 4px; font-size:9px; }
+      .goal-row { grid-template-columns:1fr; gap:2px; margin-top:5px; }
+      .goal { padding:3px 4px; font-size:8px; }
+      #quest-progress { font-size:8px; }
+      .jump { display:none; }
+      .mini-map { top:7px; right:7px; width:30vw; min-width:126px; max-width:190px; height:108px; }
+      .interaction { left:8px; right:8px; bottom:7px; width:auto; min-height:102px; max-height:23vh; padding:8px 10px; }
+      .spot-button { font-size:8px; padding:3px 6px 3px 4px; min-height:25px; }
+      .spot-glyph { font-size:11px; width:14px; }
+      .place-pin { width:84px; font-size:8px; }
+      .world-map { min-height:52vh; }
+      .archive-board.open { padding:8px; }
+      .archive-board .board-heading { flex-direction:row; }
+      #truth-frame { height:calc(96vh - 92px); min-height:420px; }
+      .finale { padding:8vh 5vw; }
+      .notebook.open { width:94vw; height:90vh; }
+      .notebook > .panel-inner { display:grid; grid-template-columns:1fr; gap:8px; padding:10px; }
+      .notebook .status-panel,.notebook .story-panel,#inventory-block,#log-block { grid-column:1/-1; }
+      .notebook .story-panel .panel-inner { display:block; padding:8px; }
+      .notebook .story-panel .goal-row { margin-top:6px; }
+      .supply-shop-window.open { width:94vw; max-height:88vh; }
+      .supply-stock { grid-template-columns:1fr; }
+      .log { grid-template-columns:1fr; max-height:26vh; }
+    }
+    @media(max-aspect-ratio:1/1) {
+      .game-screen { width:100vw; height:100dvh; aspect-ratio:auto; }
+      .world-window.open,.notebook.open,.archive-board.open { width:94vw; height:90vh; }
+      #truth-frame { height:calc(90vh - 100px); min-height:0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="game-screen" id="game-screen">
+    <div class="time-hud" aria-label="当前位置、日期与时间"><strong id="header-location">市政区 · 市政档案馆</strong><span><span id="header-day">第 1 日</span> · <span id="header-time">早上 · 07:00</span></span></div>
+    <nav class="system-buttons" aria-label="系统视窗">
+      <button class="system-button" data-open-window="world-window">世界地图 M</button>
+      <button class="system-button" data-open-window="notebook-window">随身笔记 I</button>
+      <button class="system-button" data-open-window="archive-board">真相画布 J</button>
+      <button class="restart" id="restart">重开档案</button>
+    </nav>
+    <div class="intro-row">
+      <section class="panel status-panel">
+        <div class="panel-inner">
+          <div class="eyebrow">调查员记录 · FILE 00-A</div>
+          <h2>无名档案员</h2>
+          <div class="dayline">你醒在档案室的桌子底下。桌上多了一份没有署名的举报。</div>
+          <div class="status-grid">
+            <div class="meter"><div class="meter-head"><span>疲劳</span><span id="fatigue-value">18 / 100</span></div><div class="track"><div class="fill" id="fatigue-bar"></div></div></div>
+            <div class="meter"><div class="meter-head"><span>饥饿</span><span id="hunger-value">26 / 100</span></div><div class="track"><div class="fill" id="hunger-bar"></div></div></div>
+            <div class="meter"><div class="meter-head"><span>口渴</span><span id="thirst-value">21 / 100</span></div><div class="track"><div class="fill" id="thirst-bar"></div></div></div>
+            <div class="meter"><div class="meter-head"><span>情绪</span><span id="mood-value">64 / 100</span></div><div class="track"><div class="fill" id="mood-bar"></div></div></div>
+          </div>
+          <div class="player-meta">
+            <span class="seal">金币 <b id="coins">5</b></span>
+            <label for="faction" class="seal">倾向</label>
+            <select id="faction" class="faction-select" aria-label="选择阵营倾向">
+              <option value="doubt">质疑</option><option value="order">秩序</option><option value="economy">经济</option><option value="innovation">创新</option>
+            </select>
+          </div>
+          <div class="time-panel">
+            <span class="period">时段 <b id="period-label">早上</b> · <span id="period-clock">07:00</span></span>
+            <button class="quiet-button" id="rest">歇一会儿</button>
+            <button class="quiet-button" id="eat">吃干粮</button>
+            <button class="quiet-button" id="drink">喝水</button>
+            <button class="quiet-button" id="drink-tea">喝热茶</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel story-panel">
+        <div class="panel-inner">
+          <div class="chapter-line"><span class="eyebrow">正在调查</span><span class="chapter-number" id="chapter-number">第 1 案</span></div>
+          <h2 id="chapter-title">被破坏的院子</h2>
+          <p class="story-lead" id="chapter-lead"></p>
+          <div class="goal-row" id="goals"></div>
+          <p id="quest-progress"></p>
+          <button class="jump" id="jump-board">去真相画布合成卡牌 ↓</button>
+        </div>
+      </section>
+    </div>
+
+    <section class="finale" id="finale">
+      <div class="finale-card">
+        <div class="eyebrow">档案结案 · ENDING CARD</div>
+        <h2 id="finale-title"></h2>
+        <p id="finale-text"></p>
+      </div>
+    </section>
+
+    <main class="workbench">
+      <section class="panel world-window" id="world-window">
+        <div class="panel-inner">
+          <button class="window-close" data-close-window>关闭 ×</button>
+          <div class="section-title"><h3>雾钟镇 · 城区总览</h3><small>DISTRICT MAP · 一级移动</small></div>
+          <div class="world-map" id="world-map">
+            <svg viewBox="0 0 500 350" preserveAspectRatio="none" aria-hidden="true">
+              <path class="map-water" d="M-10 250 C65 215 99 270 151 249 S247 197 298 229 S391 271 510 213 L510 365 L-10 365Z"/>
+              <path class="map-road" d="M36 70 C112 106 126 144 204 159 S319 129 457 166"/>
+              <path class="map-road-edge" d="M36 70 C112 106 126 144 204 159 S319 129 457 166"/>
+              <path class="map-road" d="M204 159 C202 213 240 256 316 304"/>
+              <path class="map-road-edge" d="M204 159 C202 213 240 256 316 304"/>
+              <path class="map-land" d="M20 36 L104 24 143 55 116 100 45 108 18 77Z M151 22 L237 31 253 76 212 109 143 75Z M300 39 L379 19 447 54 426 99 345 109 291 79Z"/>
+              <path class="map-land" d="M95 139 L148 115 184 148 166 194 104 201 73 174Z M279 172 L345 147 384 183 362 224 305 233Z M211 259 L269 238 307 272 289 325 229 327Z"/>
+              <text x="20" y="338" font-size="11" fill="#565248" letter-spacing="3">雾河 · FOGBELL</text>
+            </svg>
+            <div class="map-caption">选择城区后，在场景右上角的小地图前往具体地点。</div>
+          </div>
+          <div class="world-legend">一级区域：城市城区　·　◇ 表示尚未开放</div>
+        </div>
+      </section>
+
+      <section class="panel scene-panel" id="scene-panel">
+        <div class="scene-art" id="scene-art">
+          <svg viewBox="0 0 1200 760" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <defs>
+              <pattern id="scene-hatch" width="9" height="9" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="9" stroke="#443f35" stroke-opacity=".33" stroke-width="1"/></pattern>
+              <pattern id="dense-hatch" width="5" height="5" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="5" stroke="#25231e" stroke-opacity=".48" stroke-width="1"/></pattern>
+              <radialGradient id="vignette"><stop offset="52%" stop-color="#eee8da" stop-opacity="0"/><stop offset="100%" stop-color="#302d27" stop-opacity=".5"/></radialGradient>
+            </defs>
+            <rect width="1200" height="760" fill="#dcd5c6"/>
+            <rect width="1200" height="760" fill="url(#scene-hatch)" opacity=".48"/>
+            <g id="art-archive">
+              <path class="wash" d="M0 99 1200 60v489L0 600Z"/>
+              <path class="inkline" d="M0 605 1200 548M0 648 1200 601"/>
+              <path class="hatchfill" d="M50 108 365 96v363L50 478Z M836 78 1130 67v406l-294 15Z"/>
+              <path class="inkline" d="M50 180 365 168M50 252 365 240M50 324 365 312M50 396 365 384M836 154 1130 143M836 230 1130 218M836 306 1130 295M836 382 1130 371"/>
+              <path class="fine" d="M84 112v355m40-357v354m41-356v352m40-354v351m40-353v349m40-351v348m40-350v346m497-400v393m40-395v391m40-393v389m40-391v386m40-388v385m40-386v383"/>
+              <path class="inkline" d="M463 123h272v252H463zM488 147h223v202H488z"/>
+              <path class="wash" d="M515 147v203m170-203v203M486 246h225"/>
+              <path class="inkline" d="M526 167q85-88 170 0M526 181q85-88 170 0"/>
+              <path class="solid" d="M561 350h82v83h-82z"/>
+              <path class="inkline" d="M517 433h171l32 96H483zM465 529h290"/>
+              <path class="fine" d="m484 460 230 53m-213-72 211 47m-240 22 187 42"/>
+              <path class="hatchfill" d="M557 394h89v39h-89z"/>
+              <path class="solid" d="M593 369q18-17 36 0v25h-36z"/>
+              <path class="fine" d="M0 552q132-16 247 2t245 1m465-12q123-15 243 0"/>
+            </g>
+            <g id="art-crow" style="display:none">
+              <circle cx="980" cy="135" r="58" fill="#e9e3d6" stroke="#292720" stroke-width="2"/>
+              <path class="fine" d="M0 574h1200M0 628h1200M0 681h1200"/>
+              <path class="hatchfill" d="M143 275 336 117l202 158v293H143zM648 288 852 104l203 184v287H648z"/>
+              <path class="inkline" d="M112 282 336 95l232 187M616 295 851 80l244 215"/>
+              <path class="inkline" d="M180 334h87v125h-87zM304 334h89v125h-89zM699 340h91v118h-91zM830 340h91v118h-91z"/>
+              <path class="wash" d="M178 336h91v-91q-46-65-91 0zM697 342h95v-91q-47-65-95 0z"/>
+              <path class="solid" d="M462 370h84v184h-84zM445 552h118v22H445z"/>
+              <path class="fine" d="M0 477q74-65 155-20m-151 8q82-62 158-16M1040 452q83-54 159 6m-161 9q83-53 161 10"/>
+              <path class="solid" d="M101 488q20-102 42-2l34 49H80zM1000 476q28-131 49-4l35 63H979z"/>
+              <path class="inkline" d="M420 590h168m-146-8v-43m123 43v-46m-123 18h123m-123 19h123"/>
+              <circle cx="442" cy="602" r="31" class="inkline"/><circle cx="552" cy="602" r="31" class="inkline"/>
+              <path class="fine" d="M442 602h110l-53-43-23 43 49-29"/>
+              <path class="hatchfill" d="M27 576 79 418h17l23 158zM1105 578l42-164h19l25 164z"/>
+            </g>
+            <g id="art-hall" style="display:none">
+              <path class="wash" d="M0 132 600 49l600 83v425L0 559Z"/>
+              <path class="inkline" d="M0 136 600 54l600 82M0 559l600-51 600 51"/>
+              <path class="hatchfill" d="M61 139h72v381H61zM250 114h72v389h-72zM439 88h72v401h-72zM689 88h72v401h-72zM878 114h72v389h-72zM1067 139h72v381h-72z"/>
+              <path class="inkline" d="M70 225h53m136-67h53m136-68h53m178 68h53m136 67h53m136 68h53"/>
+              <path class="solid" d="M485 219h230v128H485z"/>
+              <circle cx="600" cy="263" r="45" fill="#ddd6c8" stroke="#292720" stroke-width="2"/>
+              <path class="inkline" d="M600 222v42l27 22M582 263h36"/>
+              <path class="hatchfill" d="M426 367h348v89H426zM393 456h414v24H393z"/>
+              <path class="inkline" d="M460 383h278m-278 18h278m-278 18h278"/>
+              <path class="solid" d="M104 564v-79h109v79h-12v-54h-85v54zM271 557v-75h101v75h-12v-50h-77v50zM842 557v-75h101v75h-12v-50h-77v50zM1002 564v-79h109v79h-12v-54h-85v54z"/>
+              <path class="fine" d="M0 626h1200m-1200 39h1200"/>
+            </g>
+            <g id="art-observatory" style="display:none">
+              <path class="wash" d="M0 510 1200 475v285H0z"/>
+              <path class="inkline" d="M0 551 1200 519M0 623 1200 596"/>
+              <path class="hatchfill" d="M273 526V254q327-406 655 0v272z"/>
+              <path class="inkline" d="M244 264q357-424 714 0M306 261q294-329 588 0"/>
+              <path class="fine" d="M365 247v271m94-271v268m94-267v265m94-265v265m94-266v268m94-269v271"/>
+              <path class="inkline" d="M210 522h780M315 543h570"/>
+              <circle cx="600" cy="210" r="18" class="solid"/><circle cx="444" cy="136" r="7" class="solid"/><circle cx="770" cy="111" r="6" class="solid"/><circle cx="867" cy="202" r="5" class="solid"/>
+              <path class="fine" d="m444 136 156 74 170-99 97 91M600 210l-139 116 309 56 97-180"/>
+              <path class="solid" d="m813 412 62-162 25 8-35 168-31 26zM870 250l-33-21 10-27 80 29-10 28z"/>
+              <path class="fine" d="m823 416 45-146m-28 168 64-10M251 561q69-44 133 0m431-8q70-49 142 0"/>
+              <path class="hatchfill" d="M154 560v-59h116v59zM928 554v-66h125v66z"/>
+            </g>
+            <rect width="1200" height="760" fill="url(#vignette)"/>
+            <path d="M18 18h1164v724H18z" fill="none" stroke="#25231e" stroke-opacity=".46" stroke-width="2"/>
+            <path d="M31 31h1138v698H31z" fill="none" stroke="#25231e" stroke-opacity=".25" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="spot-list" id="spot-list" aria-label="场景可调查地点"></div>
+        <div class="panel-inner">
+          <div class="mini-map" id="mini-map">
+            <svg viewBox="0 0 300 180" preserveAspectRatio="none" aria-hidden="true">
+              <defs><pattern id="street-hatch" width="9" height="9" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="9" stroke="#aaa18e" stroke-width="1"/></pattern></defs>
+              <rect x="8" y="8" width="284" height="164" fill="url(#street-hatch)" opacity=".7"/>
+              <path class="street-line" d="M-10 45 310 45M-10 125 310 125M68 -10 68 190M168 -10 168 190M250 -10 250 190"/>
+              <path class="street-edge" d="M-10 45 310 45M-10 125 310 125M68 -10 68 190M168 -10 168 190M250 -10 250 190"/>
+              <path d="M14 14h38v24H14zM83 15h75v24H83zM182 16h58v24H182zM264 57h20v59H264zM84 134h74v28H84zM184 134h57v28H184z" fill="#d4cbb8" stroke="#817b6d" stroke-width="1"/>
+              <text x="12" y="171" font-size="8" fill="#565248" letter-spacing="1.2">STREET PLAN · 选择地点</text>
+            </svg>
+            <span class="mini-caption" id="mini-caption">二级移动 · 城区街道</span>
+          </div>
+          <div class="interaction" id="interaction" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <aside class="panel notebook" id="notebook-window">
+        <div class="panel-inner">
+          <button class="window-close" data-close-window>关闭 ×</button>
+          <div class="section-title"><h3>随身笔记</h3><small>POCKET LEDGER</small></div>
+          <div class="notebook-block" id="inventory-block">
+            <div class="notebook-label">随身物件 / Inventory</div>
+            <div class="inventory" id="inventory"></div>
+          </div>
+          <div class="notebook-block" id="log-block">
+            <div class="notebook-label">调查记录 / Field Notes</div>
+            <ol class="log" id="log"></ol>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <section class="supply-shop-window panel" id="supply-shop-window">
+      <div class="panel-inner">
+        <button class="window-close" data-close-window>关闭 ×</button>
+        <div class="section-title"><h3>鸦钟杂货铺</h3><small>SUPPLIES & PROVISIONS</small></div>
+        <p class="supply-intro">老板把补给按用途摆好：干粮能撑过漫长的调查，水壶装着清水，热茶则能驱散一些疲惫。</p>
+        <p class="supply-balance">随身金币：<b id="supply-balance">5</b></p>
+        <div class="supply-stock" id="supply-stock"></div>
+        <p class="supply-status" id="supply-status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section class="archive-board" id="archive-board">
+      <button class="window-close" data-close-window>关闭 ×</button>
+      <div class="board-heading"><div><h2 id="board-title">真相画布与卡牌合成</h2><p id="board-subtitle">把卡牌拖入画布右下角执行区，再选择阵营。空白处可平移，滚轮可缩放。</p></div><span class="eyebrow" id="board-kicker">THE EVIDENCE BOARD</span></div>
+      <div class="board-frame"><iframe id="truth-frame" src="truth-panel2.html" title="真相画布与卡牌系统"></iframe></div>
+    </section>
+    <footer class="footer"><span>雾钟镇档案馆 · 私人调查员工作副本</span><span>纸面、墨水、和一枚来历不明的铃铛</span></footer>
+    </div>
+  </div>
+  <div class="window-shade" id="window-shade" hidden></div>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+  (function(){
+    'use strict';
+    const periods = [
+      {name:'早上',clock:'07:00'},
+      {name:'下午',clock:'14:00'},
+      {name:'晚上',clock:'21:00'}
+    ];
+    const chapters = [
+      {
+        title:'被破坏的院子',
+        lead:'一辆旧脚踏车倒在小鸦巷。车铃不见了，院墙上留着一道新鲜的白粉线。举报信却声称：这只是一起普通的邻里纠纷。',
+        truth:'TRUTH_0', clueIds:['CLUE_0','CLUE_1','CLUE_2'], questionIds:['KQ_0','KQ_1','KQ_2'], endingIds:['END_0','END_1','END_2'],
+        recipes:[{question:'KQ_0',clueIds:['CLUE_0']},{question:'KQ_1',clueIds:['CLUE_1']},{question:'KQ_2',clueIds:['CLUE_2']}],
+        place:'crow', objective:'找出车铃的去向'
+      },
+      {
+        title:'无名者的发展',
+        lead:'院墙背后不是单纯的夜间集会。罢工、线下活动、学术讨论与狂欢传闻，都指向一个被市政厅抹去名字的群体。',
+        truth:'TRUTH_1', clueIds:['CLUE_3','CLUE_4','CLUE_5','CLUE_6'], questionIds:['KQ_3','KQ_4','KQ_5','KQ_6'], endingIds:['END_3','END_4','END_5','END_6'],
+        recipes:[{question:'KQ_3',clueIds:['CLUE_3']},{question:'KQ_4',clueIds:['CLUE_4']},{question:'KQ_5',clueIds:['CLUE_5']},{question:'KQ_6',clueIds:['CLUE_6']}],
+        place:'hall', objective:'查清集会为何被抹去'
+      },
+      {
+        title:'谁是内鬼？',
+        lead:'星盘、录音、书记员的出入簿与几笔用途不明的款项，留下了许多彼此冲突的解释。举报者曾替委员会保管钥匙，却说自己从未进过档案室。',
+        truth:'TRUTH_2', clueIds:['CLUE_7','CLUE_8','CLUE_9','CLUE_10','CLUE_11','CLUE_12','CLUE_13','CLUE_14','CLUE_15','CLUE_16','CLUE_17','CLUE_18','CLUE_19'], questionIds:['KQ_7','KQ_8','KQ_9','KQ_10','KQ_11','KQ_12','KQ_13'], endingIds:['END_7','END_8','END_9','END_10','END_11','END_12','END_13'],
+        recipes:[{question:'KQ_7',clueIds:['CLUE_7','CLUE_8']},{question:'KQ_8',clueIds:['CLUE_9','CLUE_10','CLUE_11']},{question:'KQ_9',clueIds:['CLUE_12','CLUE_13']},{question:'KQ_10',clueIds:['CLUE_14']},{question:'KQ_11',clueIds:['CLUE_15','CLUE_16','CLUE_17']},{question:'KQ_12',clueIds:['CLUE_18']},{question:'KQ_13',clueIds:['CLUE_19']}],
+        place:'observatory', objective:'找出举报信背后的手'
+      }
+    ];
+    const endingOutcomes={
+      END_0:{title:'车铃指向东边',advance:'邻居把车铃搁在窗台上。她没有偷车，只是把车推离了堵住院门的位置。车铃底下压着另一份被退回的举报。',final:'邻居的证词证明，这起纠纷从一开始就被写错了名字。'},
+      END_1:{title:'好友',advance:'旧友承认曾借走脚踏车，把它藏在钟楼下替你挡住一场搜查。车筐里有一张写着“无名者”的夜会传单。',final:'好友归还了车，也把那张传单交给你。借车的理由，牵出了更大的集会。'},
+      END_2:{title:'鸟',advance:'乌鸦把车铃拖进了屋檐下的巢。碎蛋旁压着一截油纸，上面记着一场被取消的工人集会。',final:'脚踏车是被鸟拖走的，举报却是人写的。油纸上的名单把调查引向了市政厅。'},
+      END_3:{title:'成为一个反抗资本主义的组织',advance:'你们把罢工名单抄成共同章程。市政厅给它贴上了“无名者”的标签，下一份档案则记着谁最早签发了这道命令。',final:'组织者选择以罢工回应剥削，并将账目与成员决定一并公开。'},
+      END_4:{title:'成为一个反抗社会结构化的组织',advance:'他们拒绝固定的职位与名册，连组织本身也不留下永久名字。委员会的旧钥匙曾由谁保管，成了下一案的入口。',final:'成员拆掉了强加给他们的身份层级，并轮流决定如何行动。'},
+      END_5:{title:'成为一个学术研讨的组织',advance:'这群人把传单改成公开研讨会通知。会堂的录音记录了谁要求取消活动，也记录了他敲桌子的次数。',final:'研讨会留下了可查证的记录，让不同立场的人能公开质疑委员会的说法。'},
+      END_6:{title:'专注自我为所欲为',advance:'有人把所有名单撕成雪片，只留下自己的名字。雪片背面粘着一张天文台的访客证。',final:'当事人拒绝替任何组织承担责任，只按自己的意愿行动；这份选择也留下了新的证据。'},
+      END_7:{title:'命运不是星盘写的',advance:'占星师交出一份校正过的星图。星图标出的不是命运，而是委员会书记员夜里走过的路线。',final:'占星师用亲历证词取代星盘推断，证明关键行动者曾多次进入档案室。'},
+      END_8:{title:'59岁候补法官',advance:'候补法官愿意复核举报流程，但要求每份证据都能追溯来源。他给了你书记员的值班表。',final:'候补法官逐项核验封条、录音与值班记录，确认举报文件被人按程序伪装过。'},
+      END_9:{title:'13岁游戏主播',advance:'少年主播把公开地址读进直播，却没解释为什么有人急着删掉它。直播回放里有委员会的转账编号。',final:'直播让被隐藏的地址和原始记录同时公开，观众自行核对了举报时间线。'},
+      END_10:{title:'阴谋论博客主持人',advance:'博客主持人把每条传闻都贴上红线。那些猜测里混进一张真实的器官移植名单，编号与密封副本相同。',final:'博客公开了可证实的文件，也保留了未证实的猜测标记，迫使调查重新区分事实与传言。'},
+      END_11:{title:'42岁失业哲学博士',advance:'失业博士整理出研究课题、会议缺席与一笔意外款项之间的时间顺序。最先出现异常的，是一张免费咖啡券。',final:'博士将证据串成一条可以反驳、也可以复核的论证，并公开了款项与会议记录。'},
+      END_12:{title:'牙医',advance:'牙医从免费咖啡的杯沿找到一小片封蜡。封蜡边缘的齿痕，与天文台铜柜上的缺口完全吻合。',final:'牙医从封蜡与齿痕还原出被撬开的铜柜，确定有人在举报副本封存后动过手脚。'},
+      END_13:{title:'好友',advance:'一位多年好友邀请所有证人参加节庆聚会。有人在节日当晚缺席，缺席记录上却盖着书记员的印章。',final:'好友在节日聚会中召集证人，缺席名单最终指向替委员会保管密封记录的人。'}
+    };
+    const districts = {
+      civic:{name:'市政区',tag:'CIVIC QUARTER',symbol:'▤',x:19,y:34,unlockedAt:0,art:'archive',copy:'市政区的石街沿着档案馆与登记处铺开。临近黄昏时，街角茶摊的灯总比路灯先亮。'},
+      bell:{name:'钟楼区',tag:'BELL TOWER WARD',symbol:'⌂',x:43,y:48,unlockedAt:0,art:'crow',copy:'钟楼的影子把小鸦巷分成两半。这里的院门很窄，街坊却能听见隔两条街的车铃。'},
+      assembly:{name:'工人区',tag:'ASSEMBLY WARD',symbol:'▥',x:67,y:68,unlockedAt:1,art:'hall',copy:'工人区围着会堂、印刷铺和旧仓库生长。下班钟停了以后，街上仍有灯亮着。'},
+      oldtown:{name:'旧城区',tag:'OLD TOWN',symbol:'✳',x:84,y:30,unlockedAt:2,art:'observatory',copy:'旧城区的台阶被雨水磨得发亮。天文台的圆顶从这里看去，像一枚没有寄出的信封。'}
+    };
+    const places = {
+      archive:{name:'市政档案馆',tag:'ARCHIVE',symbol:'▤',district:'civic',x:25,y:42,unlockedAt:0,copy:'纸柜通向天花板。最上层的灰尘里有一条刚留下的手印。',spots:[
+        {id:'case-file',name:'无署名的案卷',glyph:'▤',x:21,y:34,chapter:0,once:true,who:'桌下的案卷',text:'案卷边角沾着白色石灰粉。第一页写着：不要替任何人决定，什么才算一件小事。',item:'盖着空白印章的案卷',card:'TRUTH_0',rewardText:'获得真相卡：谁动了我的脚踏车。'},
+        {id:'curator',name:'值班馆员',glyph:'♙',x:57,y:44,chapter:0,once:true,who:'值班馆员',at:[0],intro:'馆员把眼镜摘下来擦了三遍，才看清你的脸。',repeatText:'馆员翻了翻桌上的登记簿：“这份案卷还在，我也还记得你。”',choices:[
+          {label:'按规章登记这份举报。',text:'“好。规章至少会记得它见过这张纸。”',faction:'order',mood:2},
+          {label:'问他谁送来了案卷。',text:'馆员压低声音：“送信的人没有影子。也许是灯坏了。”',faction:'doubt',requiresFaction:'doubt',mood:5},
+          {label:'替档案柜修好松动的门闩。',text:'门闩终于合上。馆员把两枚旧硬币推给你。',faction:'innovation',coins:2}
+        ]}
+      ]},
+      crow:{name:'小鸦巷',tag:'CROW ALLEY',symbol:'⌂',district:'bell',x:51,y:49,unlockedAt:0,copy:'几间窄房挤在钟楼的阴影下。院门敞开，墙上的粉线像一道被划掉的句子。',spots:[
+        {id:'bell',name:'车轮旁的泥坑',glyph:'◌',x:28,y:40,chapter:0,once:true,who:'泥坑',text:'泥里有半圈浅痕。车铃被扭下来时，金属边缘留下了咬痕。',item:'裂口铜铃'},
+        {id:'wall-trace',name:'墙上的白粉线',glyph:'╱',x:69,y:35,chapter:0,once:true,requires:['裂口铜铃'],who:'白粉线',text:'把铜铃的缺口对上墙上的刮痕，方向正好指向院门。有人把车推走了，又特意回来擦掉轮印。',card:'CLUE_0',item:'粉笔拓片',rewardText:'解开场景谜题，获得线索卡：被破坏的院子。'},
+        {id:'broken-eggs',name:'院墙下的碎鸟蛋',glyph:'◌',x:43,y:72,chapter:0,once:true,who:'院墙下',text:'碎壳里沾着蓝色封蜡。乌鸦叼走的似乎不是食物，而是挂在车上的一小块蜡封。',card:'CLUE_2',item:'沾蜡的鸟蛋碎壳',rewardText:'发现线索卡：碎掉的鸟蛋。'},
+        {id:'neighbor',name:'二楼的邻居',glyph:'♙',x:79,y:53,chapter:0,once:true,who:'隔壁邻居',at:[1,2],intro:'她在窗后放下一杯已经凉透的茶。“那辆车每天都挡住我家的门。可我没有碰它。”',repeatText:'她仍坐在窗边：“那辆车的事，我已经告诉过你了。”',choices:[
+          {label:'把她谈到的昨夜争吵逐字记进笔记。',text:'她承认昨夜确实和车主争吵过，却说争吵时脚踏车还停在院里。',faction:'doubt',mood:7,card:'CLUE_1',cardName:'争吵'},
+          {label:'承诺替她修好院门。',text:'她把一枚铜钥匙递给你。院门原来一直锁不上。',faction:'innovation',requiresFaction:'innovation',item:'旧院门钥匙',mood:4},
+          {label:'依照流程询问昨晚的访客。',text:'“一个穿黑外套的人，鞋底沾着档案馆的蓝蜡。”',faction:'order',mood:-2}
+        ]}
+      ]},
+      hall:{name:'人民会堂',tag:'ASSEMBLY HALL',symbol:'▥',district:'assembly',x:47,y:49,unlockedAt:1,copy:'木椅排成一列列空白格子。讲台上没有讲稿，只有一只没走动的钟。',spots:[
+        {id:'minutes',name:'被抽页的会议簿',glyph:'▤',x:24,y:39,chapter:1,once:true,who:'会议簿',text:'被撕掉的那页留下了压痕：集会原定在午夜举行，参加者名单却全被改成同一个词。',item:'会议簿压痕',card:'TRUTH_1',rewardText:'获得真相卡：无名者的发展。'},
+        {id:'flyer',name:'椅脚下的传单',glyph:'▱',x:73,y:43,chapter:1,once:true,who:'旧传单',text:'传单号召每个工人把自己的名字写下来。墨迹被水泡开，唯独“我们”两个字还很清楚。',item:'夜会传单'},
+        {id:'clock-punch',name:'停住的打卡钟',glyph:'◷',x:79,y:75,chapter:1,once:true,requires:['夜会传单'],who:'打卡钟谜题',text:'传单上的折痕与打卡纸条吻合。有人把午夜的记录整齐地剪了下来，带走的不是一页纸，而是一群人的下班时间。',card:'CLUE_3',item:'剪下的时刻',rewardText:'解开会堂谜题，获得线索卡：联手罢工。'},
+        {id:'seminar-notes',name:'讲台上的研讨记录',glyph:'▤',x:27,y:63,chapter:1,once:true,who:'研讨记录',text:'记录把集会称作学术研讨会，页边却写着“不得讨论谁有资格决定他人的未来”。',card:'CLUE_5',item:'研讨会记录',rewardText:'发现线索卡：学术研讨会。'},
+        {id:'party-ticket',name:'后台的狂欢派对票根',glyph:'▱',x:59,y:34,chapter:1,once:true,who:'后台票根',text:'票根印着“只管今晚”。背面有人写下：委员会的人来过，之后音乐才被掐断。',card:'CLUE_6',item:'派对票根',rewardText:'发现线索卡：狂欢派对！'},
+        {id:'organizer',name:'收椅子的组织者',glyph:'♙',x:49,y:81,chapter:1,once:true,who:'组织者',at:[1],intro:'他一边收椅子，一边数着空位。“那天晚上没有人缺席。名单上缺席的只有名字。”',repeatText:'组织者把椅子排回原处：“这些位置还在，名字也没有被忘掉。”',choices:[
+          {label:'询问集会是否还在别处继续。',text:'他把一张线下活动单递给你：“大家不再只在会堂见面。”',faction:'doubt',item:'手写姓名纸',mood:8,card:'CLUE_4',cardName:'线下活动'},
+          {label:'把证据送去委员会。',text:'“他们会把纸收走。”他还是把纸递给了你。',faction:'order',requiresFaction:'order',mood:-3,coins:1},
+          {label:'提议把名单抄成公开副本。',text:'组织者笑了一下：“这次，墨水要用不褪色的。”',faction:'innovation',requiresFaction:'innovation',item:'公开名单底稿',mood:5}
+        ]}
+      ]},
+      observatory:{name:'旧天文台',tag:'OLD OBSERVATORY',symbol:'✳',district:'oldtown',x:67,y:47,unlockedAt:2,copy:'圆顶裂开一条缝。雨水沿着旧星图往下流，流过了一个被刮掉的姓氏。',spots:[
+        {id:'sealed-truth',name:'铜柜里的举报副本',glyph:'▣',x:23,y:39,chapter:2,once:true,who:'铜柜',text:'副本背后有一道不完整的指纹。举报者熟悉委员会的密封格式，却把自己的署名留空。',item:'密封格式拓印',card:'TRUTH_2',rewardText:'获得真相卡：谁是内鬼？'},
+        {id:'star-chart',name:'被改写的星盘',glyph:'✳',x:48,y:31,chapter:2,once:true,who:'星盘',text:'星点的位置被人重新描过。原来的墨线不是星座，而是一条从市政厅通向旧城区的夜路。',item:'星盘拓片',card:'CLUE_7',rewardText:'发现线索卡：看星盘。'},
+        {id:'recorder',name:'窗台下的录音机',glyph:'◖',x:77,y:33,chapter:2,once:true,who:'录音机',text:'录音里有三次敲击声，然后是一个熟悉的声音：“这封举报必须有人签字。”录音在签名之前被剪断。',item:'半截录音带',card:'CLUE_10',rewardText:'发现线索卡：录音机。'},
+        {id:'committee-clerk',name:'守夜的委员会书记员',glyph:'♙',x:21,y:65,chapter:2,who:'书记员',intro:'书记员把登记簿抱在膝上：“你要找的那页，恰好每晚都少一页。”',repeatText:'他仍在核对名册，空出的椅子从未被收走。',choices:[
+          {label:'核对书记员的夜间值班记录。',text:'他的签字每天都在，只有举报信被送入铜柜的那晚，值班栏换了另一种墨水。',faction:'order',card:'CLUE_9',cardName:'书记员'},
+          {label:'询问那场没有出席的委员会会议。',text:'他翻出一页无人签收的会议通知：“缺席的人后来都领到了补贴。”',faction:'economy',card:'CLUE_16',cardName:'缺席会议'},
+          {label:'问他是谁教会他盖封条。',text:'“我只按样本做事。”他避开了你的目光。',faction:'doubt',requiresFaction:'doubt',mood:3}
+        ]},
+        {id:'medical-register',name:'铜柜底层的移植登记',glyph:'▤',x:50,y:43,chapter:2,once:true,who:'移植登记',text:'登记表上的移植名单与举报信使用同一套匿名编号。有人把病人的名字改成了“可替换部件”。',card:'CLUE_14',item:'匿名移植名单',rewardText:'发现线索卡：器官移植。'},
+        {id:'research-docket',name:'研究课题封面',glyph:'▧',x:75,y:54,chapter:2,once:true,who:'研究课题',text:'课题封面写着“组织行为预测”，经费来源却被一层薄纸覆盖。揭开后，露出委员会秘书处的印章。',card:'CLUE_15',item:'研究课题封面',rewardText:'发现线索卡：研究课题。'},
+        {id:'bonus-ledger',name:'夹层里的意外之财',glyph:'▤',x:48,y:56,chapter:2,once:true,who:'账册夹层',text:'几枚旧硬币和一张转账回执夹在账册里，金额正好等于当年举报流程的外包费用。',card:'CLUE_17',item:'转账回执',rewardText:'发现线索卡：意外之财。'},
+        {id:'basement-watch',name:'通往地库的窄梯',glyph:'⌁',x:74,y:74,chapter:2,once:true,requires:['半截录音带'],who:'地库入口',text:'你按录音里的三次敲击声在地库门上敲了三下。门后有一把守夜人的椅子，椅脚沾着铜柜封蜡。',card:'CLUE_11',item:'地库值守表',rewardText:'解开地库门的声纹谜题，获得线索卡：蹲守地库。'},
+        {id:'astronomer',name:'留守的占星师',glyph:'♙',x:39,y:81,chapter:2,once:true,who:'占星师',at:[2],intro:'她把一张空白星图递给你。“星星不负责替我们作证。要作证的人，得自己留下名字。”',repeatText:'占星师收起星盘：“能作证的只有留下姓名的人。”',choices:[
+          {label:'把录音放给她听，追问她为何失态。',text:'三声敲击后，她忽然攥紧星盘。她承认自己曾因举报信里的名字而失控。',faction:'doubt',mood:8,card:'CLUE_8',cardName:'情绪化'},
+          {label:'请她把观测记录封存。',text:'“封存不等于遗忘。”她在空白处写下了今天的日期。',faction:'order',mood:3},
+          {label:'邀请她加入公开听证，并询问委员会为何不理解无名者。',text:'她答应作证：“他们把拒绝被命名的人，当成了拒绝生活的人。”',faction:'innovation',requiresFaction:'innovation',mood:7,card:'CLUE_12',cardName:'不理解无名者'}
+        ]}
+      ]},
+      registrySteps:{name:'市民登记处',tag:'CIVIC REGISTRY',symbol:'▧',district:'civic',x:72,y:28,unlockedAt:0,artRef:'archive',copy:'登记处门廊的铜牌被擦得过分干净。窗口后面的灯亮着，却没有人应门。',spots:[
+        {id:'registry-ledger',name:'门边的空白名册',glyph:'▤',x:75,y:41,chapter:0,once:true,who:'登记处门廊',text:'名册上每一行都留着姓名的位置。墨水渗进纸背，像是有人曾经把名字写得很重。'}
+      ]},
+      'tea-stall':{name:'钟针茶摊',tag:'CLOCKHAND TEA',symbol:'♨',district:'civic',x:48,y:76,unlockedAt:0,artRef:'archive',copy:'茶摊靠着旧钟的石基。老板把零钱按年份排好，从不解释为什么。',spots:[
+        {id:'tea-menu',name:'钉在桌边的价目单',glyph:'▱',x:63,y:61,chapter:0,once:true,who:'茶摊价目单',text:'每一杯茶的价格都用铅笔改过。最旧的那一栏写着：赊账的人，请留下真名。'},
+        {id:'free-coffee',name:'桌下的免费咖啡券',glyph:'▧',x:38,y:39,chapter:2,once:true,who:'茶摊桌下',text:'咖啡券没有日期，却盖着委员会会客室的印章。背面写着“不要记入招待费”。',card:'CLUE_18',item:'咖啡券',rewardText:'发现线索卡：免费咖啡。'}
+      ]},
+      'clock-square':{name:'三刻钟广场',tag:'THREE-QUARTER SQUARE',symbol:'◷',district:'bell',x:22,y:34,unlockedAt:0,artRef:'crow',copy:'广场钟面永远差一刻钟。行人经过时，会下意识抬头确认自己的表。',spots:[
+        {id:'square-clock',name:'钟面下的裂缝',glyph:'◷',x:49,y:39,chapter:0,once:true,who:'广场钟面',text:'裂缝从六点的位置一路爬到钟心。有人用细线把指针固定在七点，却留下了一个空齿。'},
+        {id:'festival-notice',name:'钟楼区的过节告示',glyph:'▱',x:69,y:62,chapter:2,once:true,who:'广场告示栏',text:'告示邀请居民在停钟日聚会。名单里有一位委员会书记员，旁边却标着“不得入场”。',card:'CLUE_19',item:'停钟日告示',rewardText:'发现线索卡：过节。'}
+      ]},
+      'provision-shop':{name:'鸦钟杂货铺',tag:'RAVEN SUPPLY',symbol:'▧',district:'bell',x:22,y:76,unlockedAt:0,artRef:'crow',copy:'杂货铺挤在钟楼区的转角，老板把干粮、水壶和热茶分门别类地码在木架上。',spots:[
+        {id:'provision-counter',name:'补给柜台',glyph:'▧',x:55,y:49,chapter:0,who:'鸦钟杂货铺老板',text:'“路上带些吃喝吧。雾钟镇的钟声很长，肚子可等不了那么久。”',shop:'supplies'}
+      ]},
+      'clue-market':{name:'灰钟线索铺',tag:'GREY BELL CLUE SHOP',symbol:'▣',district:'bell',x:80,y:27,unlockedAt:0,artRef:'crow',copy:'灰钟线索铺藏在钟楼背面。老板把旧报纸、传闻和无人认领的笔记都标上了价。',spots:[
+        {id:'clue-market-counter',name:'线索柜台',glyph:'▣',x:48,y:49,chapter:0,who:'灰钟线索铺老板',text:'“每条传闻都有来处。看中哪一条，就把价钱和后果都想清楚。”',shop:'clues'}
+      ]},
+      keymaker:{name:'灰鸦钥匙铺',tag:'GREY CROW LOCKSMITH',symbol:'⚿',district:'bell',x:77,y:73,unlockedAt:0,artRef:'crow',copy:'钥匙铺只挂着没有齿的钥匙。门上写着“配锁请带来门，不要带来钥匙”。',spots:[
+        {id:'keymaker-door',name:'门上的钥匙孔',glyph:'⚿',x:75,y:44,chapter:0,once:true,who:'钥匙铺',text:'钥匙孔里塞着一小片蓝蜡。它的颜色和档案馆封条上的蜡完全相同。'}
+      ]},
+      printshop:{name:'铅字印刷铺',tag:'LEAD TYPE PRINTSHOP',symbol:'▤',district:'assembly',x:22,y:29,unlockedAt:1,artRef:'hall',copy:'印刷机停在一张没印完的名单上，纸上只剩下整齐的横线。',spots:[
+        {id:'print-proof',name:'压在滚筒下的校样',glyph:'▤',x:37,y:47,chapter:1,once:true,who:'印刷铺校样',text:'纸张上有一串被刮掉的名字。留下的凹痕说明它们曾被反复誊写。'}
+      ]},
+      'union-store':{name:'工会旧仓库',tag:'UNION STOREHOUSE',symbol:'▥',district:'assembly',x:76,y:75,unlockedAt:1,artRef:'hall',copy:'仓库门上挂着一把生锈的锁。里面的椅子按人数排好，没有一张多出来。',spots:[
+        {id:'storehouse-chairs',name:'门缝里的座位牌',glyph:'♙',x:71,y:66,chapter:1,once:true,who:'旧仓库门缝',text:'座位牌背面写着一个日期，正好是会议簿被抽走那一页的前一天。'}
+      ]},
+      'grave-stair':{name:'雨墓台阶',tag:'RAIN GRAVE STEPS',symbol:'⌁',district:'oldtown',x:23,y:72,unlockedAt:2,artRef:'observatory',copy:'苔藓沿着石阶向上爬。每一级都刻着一个姓氏，唯独最上一级被磨平。',spots:[
+        {id:'grave-name',name:'被磨平的姓氏',glyph:'⌁',x:28,y:56,chapter:2,once:true,who:'雨墓台阶',text:'石面还有新鲜的粉末。有人不是忘了这个姓氏，而是专程带了锉刀来。'}
+      ]},
+      'north-gate':{name:'北侧旧门',tag:'NORTH OLD GATE',symbol:'⌑',district:'oldtown',x:70,y:77,unlockedAt:2,artRef:'observatory',copy:'旧门外通向一条早已封闭的路。门闩上挂着一枚没有署名的铜牌。',spots:[
+        {id:'north-gate-plaque',name:'没有署名的铜牌',glyph:'⌑',x:78,y:49,chapter:2,once:true,who:'北侧旧门',text:'铜牌背面有三道敲击留下的小凹痕，间距与录音里的声音相同。'},
+        {id:'public-address',name:'被撕去的公开地址',glyph:'▤',x:36,y:65,chapter:2,once:true,who:'北门告示板',text:'旧门告示曾刊出听证会地址，撕去告示的人留下了完整的钉孔和半枚委员会印章。',card:'CLUE_13',item:'地址拓印',rewardText:'发现线索卡：公开地址。'}
+      ]}
+    };
+    const factionNames={order:'秩序',economy:'经济',doubt:'质疑',innovation:'创新'};
+    const supplyGoods=[
+      {id:'ration',item:'干粮',price:2,description:'恢复饥饿值的随身口粮。'},
+      {id:'canteen',item:'水壶',price:3,description:'装着清水，饮用后恢复口渴值。'},
+      {id:'tea',item:'热茶',price:2,description:'饮用后缓解口渴与疲劳。'}
+    ];
+    const initialState={
+      chapter:0, day:1, period:0, faction:'doubt', coins:5,
+      fatigue:18,hunger:26,thirst:21,mood:64,district:'civic',place:'archive',
+      items:{'干粮':1,'水壶':1}, done:{}, storyCards:{}, purchasedCards:{}, consumedCards:{}, questionsCrafted:{}, endingsCrafted:{}, routeCards:[], dialogueDone:{}, visitedDistricts:{civic:true}, visitedPlaces:{archive:true}, logs:[], pending:null, finished:false
+    };
+    let state=copyState(initialState);
+    const frame=document.getElementById('truth-frame');
+    let panelReady=false;
+    let panelView='canvas';
+    let toastTimer=0;
+    const $=id=>document.getElementById(id);
+    ['world-window','notebook-window','archive-board','supply-shop-window'].forEach(id=>document.body.appendChild($(id)));
+    const notebookInner=$('notebook-window').querySelector('.panel-inner');
+    const inventoryBlock=$('inventory-block');
+    const statusPanel=document.querySelector('.status-panel');
+    const storyPanel=document.querySelector('.story-panel');
+    notebookInner.insertBefore(storyPanel,inventoryBlock);
+    notebookInner.insertBefore(statusPanel,inventoryBlock);
+
+    function copyState(value){ return JSON.parse(JSON.stringify(value)); }
+    function activeChapter(){ return chapters[Math.min(state.chapter,chapters.length-1)]; }
+    function currentPlace(){
+      if(places[state.place]) return places[state.place];
+      const district=districts[state.district];
+      return {name:district.name+'街区',tag:district.tag,copy:district.copy,spots:[],artRef:district.art};
+    }
+    function isUnlocked(key){
+      const entry=places[key]||districts[key];
+      return !!entry&&entry.unlockedAt<=state.chapter;
+    }
+    function getItem(name){ return state.items[name]||0; }
+    function addLog(message){
+      const clock=periods[state.period].clock;
+      state.logs.unshift({day:state.day,clock:clock,text:message});
+      state.logs=state.logs.slice(0,18);
+    }
+    function say(message,who){
+      const box=$('interaction');
+      box.innerHTML='';
+      const label=document.createElement('div'); label.className='who'; label.textContent=who||'调查记录';
+      const body=document.createElement('p'); body.textContent=message;
+      box.append(label,body);
+    }
+    function notify(message){
+      const el=$('toast'); el.textContent=message; el.classList.add('show');
+      clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2300);
+    }
+    function sendPanel(message){
+      if(panelReady&&frame.contentWindow) frame.contentWindow.postMessage(message,'*');
+    }
+    function giveCard(id){
+      state.storyCards[id]=true;
+      state.consumedCards[id]=false;
+      sendPanel({type:'story-grant-card',cardId:id});
+    }
+    function updateCardSync(){
+      sendPanel({type:'story-set-gold',gold:state.coins});
+      const ownedIds=new Set([
+        ...Object.keys(state.storyCards).filter(id=>state.storyCards[id]),
+        ...Object.keys(state.purchasedCards).filter(id=>state.purchasedCards[id]),
+        ...Object.keys(state.questionsCrafted).filter(id=>state.questionsCrafted[id]),
+        ...Object.keys(state.endingsCrafted).filter(id=>state.endingsCrafted[id])
+      ]);
+      ownedIds.forEach(id=>{if(!state.consumedCards[id])sendPanel({type:'story-grant-card',cardId:id});});
+    }
+    function findSpot(id){
+      const keys=Object.keys(places);
+      for(let i=0;i<keys.length;i++){
+        const match=places[keys[i]].spots.find(s=>s.id===id);
+        if(match) return match;
+      }
+      return null;
+    }
+    function gainItem(name,count){
+      if(!name) return;
+      state.items[name]=(state.items[name]||0)+(count||1);
+    }
+    function consumeItem(name){
+      if(!getItem(name)) return false;
+      state.items[name]-=1;
+      if(state.items[name]<=0) delete state.items[name];
+      return true;
+    }
+    function passTime(){
+      state.period++;
+      if(state.period>=periods.length){state.period=0;state.day++;}
+      state.fatigue=cap(state.fatigue+8,0,100);
+      state.hunger=cap(state.hunger+6,0,100);
+      state.thirst=cap(state.thirst+7,0,100);
+      const strained=state.fatigue>=78||state.hunger>=82||state.thirst>=82;
+      state.mood=cap(state.mood-(strained?5:1),0,100);
+    }
+    function cap(value,min,max){return Math.max(min,Math.min(max,value));}
+    function changeFaction(faction){
+      if(faction) state.faction=faction;
+      $('faction').value=state.faction;
+    }
+    function unlockedAtPeriod(spot){
+      return !spot.at||spot.at.indexOf(state.period)>=0;
+    }
+    function requirementsMet(spot){
+      return !spot.requires||spot.requires.every(name=>getItem(name)>0);
+    }
+
+    function renderGoals(){
+      const act=activeChapter();
+      $('chapter-number').textContent='第 '+(state.chapter+1)+' 案';
+      $('chapter-title').textContent=act.title;
+      $('chapter-lead').textContent=act.lead;
+      const clueCount=act.clueIds.filter(hasCard).length;
+      const readyCount=act.recipes.filter(recipe=>recipe.clueIds.every(hasCard)).length;
+      const hasQuestion=act.questionIds.some(id=>state.questionsCrafted[id]);
+      const steps=[
+        {text:'取得真相卡',done:hasCard(act.truth)},
+        {text:'找到至少一组可合成线索',done:readyCount>0},
+        {text:hasQuestion?'关键问题已合成':'选择路线并合成关键问题',done:hasQuestion},
+        {text:'组合真相卡与关键问题，形成结局',done:false,current:true}
+      ];
+      $('goals').innerHTML='';
+      steps.forEach(step=>{
+        const el=document.createElement('span'); el.className='goal'+(step.done?' done':'')+(step.current&&!step.done?' current':'');
+        el.textContent=(step.done?'✓ ':'')+step.text; $('goals').appendChild(el);
+      });
+      const progress='线索 '+clueCount+' / '+act.clueIds.length+' · 可合成问题 '+readyCount+' / '+act.questionIds.length+' · '+act.objective;
+      $('quest-progress').textContent=progress;
+    }
+    function hasCard(cardId){
+      return !!state.storyCards[cardId]||!!state.purchasedCards[cardId]||!!state.questionsCrafted[cardId]||!!state.endingsCrafted[cardId];
+    }
+    function renderMeters(){
+      ['fatigue','hunger','thirst','mood'].forEach(key=>{
+        const value=state[key]; $(key+'-value').textContent=value+' / 100';
+        const bar=$(key+'-bar'); bar.style.width=value+'%';
+        const bad=key==='mood'?value<30:value>68; bar.classList.toggle('warn',bad);
+      });
+      $('coins').textContent=state.coins;
+      $('faction').value=state.faction;
+      $('period-label').textContent=periods[state.period].name;
+      $('period-clock').textContent=periods[state.period].clock;
+      $('header-day').textContent='第 '+state.day+' 日';
+      $('header-time').textContent=periods[state.period].name+' · '+periods[state.period].clock;
+      const district=districts[state.district];
+      const place=state.place&&places[state.place];
+      $('header-location').textContent=district.name+(place?' · '+place.name:' · 街区');
+    }
+    function renderInventory(){
+      const box=$('inventory'); box.innerHTML='';
+      const names=Object.keys(state.items);
+      if(!names.length){box.textContent='空';return;}
+      names.forEach(name=>{
+        const tag=document.createElement('span'); tag.className='item';
+        tag.textContent=name+' ';
+        const count=document.createElement('span'); count.className='qty'; count.textContent='×'+state.items[name];
+        tag.appendChild(count); box.appendChild(tag);
+      });
+    }
+    function renderLog(){
+      const list=$('log'); list.innerHTML='';
+      state.logs.forEach(entry=>{
+        const li=document.createElement('li');
+        const time=document.createElement('time'); time.textContent='D'+entry.day+' '+entry.clock+' ';
+        li.append(time,document.createTextNode(entry.text)); list.appendChild(li);
+      });
+    }
+    function renderMap(){
+      const map=$('world-map');
+      map.querySelectorAll('.place-pin').forEach(node=>node.remove());
+      Object.keys(districts).forEach(key=>{
+        const district=districts[key], pin=document.createElement('button'), unlocked=isUnlocked(key);
+        pin.className='place-pin'+(state.district===key?' current':'')+(!unlocked?' locked':'');
+        pin.style.left=district.x+'%'; pin.style.top=district.y+'%';
+        pin.dataset.district=key; pin.disabled=!unlocked;
+        pin.innerHTML='<span class="pin-symbol">'+(unlocked?district.symbol:'◇')+'</span>'+district.name;
+        map.appendChild(pin);
+      });
+    }
+    function renderScene(){
+      const place=currentPlace();
+      const district=districts[state.district];
+      $('mini-caption').textContent='二级移动 · '+district.name;
+      const artName=place.artRef||state.place||district.art;
+      ['archive','crow','hall','observatory'].forEach(name=>{
+        const art=$('art-'+name);
+        if(art) art.style.display=name===artName?'':'none';
+      });
+      const map=$('mini-map');
+      map.querySelectorAll('.mini-location-pin').forEach(node=>node.remove());
+      Object.keys(places).filter(key=>places[key].district===state.district).forEach(key=>{
+        const destination=places[key], unlocked=isUnlocked(key), pin=document.createElement('button');
+        pin.className='mini-location-pin'+(state.place===key?' current':'')+(!unlocked?' locked':'');
+        pin.style.left=destination.x+'%'; pin.style.top=destination.y+'%';
+        pin.dataset.place=key; pin.disabled=!unlocked;
+        pin.textContent=(unlocked?'':'◇ ')+destination.name;
+        pin.setAttribute('aria-label','前往'+destination.name);
+        map.appendChild(pin);
+      });
+      const list=$('spot-list'); list.innerHTML='';
+      (place.spots||[]).filter(spot=>spot.chapter<=state.chapter).forEach(spot=>{
+        const done=!!state.done[spot.id], npc=!!spot.choices, available=unlockedAtPeriod(spot), hasItems=requirementsMet(spot);
+        const button=document.createElement('button');
+        button.className='spot-button'+(done?(npc?' repeatable':' done'):''); button.dataset.spot=spot.id;
+        button.style.left=spot.x+'%'; button.style.top=Math.min(spot.y,69)+'%';
+        const glyph=document.createElement('span'); glyph.className='spot-glyph'; glyph.textContent=done&&!npc?'✓':spot.glyph;
+        const label=document.createElement('span');
+        label.textContent=spot.name+(done?(npc?' · 再次交谈':(spot.item||spot.card?' · 已获得':' · 已调查')):'')+(spot.at&&!available&&!done?' · '+spot.at.map(i=>periods[i].name).join('/'):'')+(!done&&!hasItems?' · 缺少物件':'');
+        button.setAttribute('aria-label',label.textContent);
+        button.append(glyph,label);
+        list.appendChild(button);
+      });
+      if(state.pending) renderChoices();
+      else if(!$('interaction').textContent.trim()) say(state.place?'点击场景标记调查，或从右上角街道图前往城区内的其他地点。部分谜题需要先找到相关物件。':'从右上角街道图选择一个具体地点，开始探索这片城区。','行动提示');
+    }
+    function renderChoices(){
+      const pending=state.pending, spot=findSpot(pending);
+      if(!spot){state.pending=null;return;}
+      const revisiting=!!state.done[spot.id];
+      const completed=state.dialogueDone[spot.id]||[];
+      const remaining=spot.choices.map((choice,index)=>({choice,index})).filter(entry=>!completed.includes(entry.index));
+      const box=$('interaction'); box.innerHTML='';
+      const who=document.createElement('div'); who.className='who'; who.textContent=spot.who;
+      const intro=document.createElement('p');
+      intro.textContent=remaining.length?(revisiting?(spot.repeatText||'你们已经谈过这件事。'):spot.intro):(spot.finishedText||'你们已经把能谈的都谈过了。');
+      const options=document.createElement('div'); options.className='choice-list';
+      remaining.forEach(({choice,index})=>{
+        const button=document.createElement('button'); button.className='choice'; button.dataset.choice=String(index);
+        const locked=choice.requiresFaction&&choice.requiresFaction!==state.faction;
+        button.disabled=!!locked;
+        button.textContent=choice.label+(choice.cardName?' · 线索「'+choice.cardName+'」':'')+(choice.requiresFaction?' · 需要「'+factionNames[choice.requiresFaction]+'」倾向':'');
+        if(locked) button.title='当前倾向为「'+factionNames[state.faction]+'」，需要「'+factionNames[choice.requiresFaction]+'」倾向。';
+        options.appendChild(button);
+      });
+      box.append(who,intro);
+      if(remaining.length) box.appendChild(options);
+      const dismiss=document.createElement('button'); dismiss.className='choice'; dismiss.dataset.dismissDialog=''; dismiss.textContent='结束交谈';
+      box.appendChild(dismiss);
+    }
+    function render(){
+      renderMeters(); renderGoals(); renderInventory(); renderLog(); renderMap(); renderScene();
+      $('eat').disabled=!getItem('干粮'); $('drink').disabled=!getItem('水壶');
+      $('drink-tea').disabled=!getItem('热茶');
+      if($('supply-shop-window').classList.contains('open')) renderSupplyShop();
+      $('finale').classList.toggle('visible',state.finished);
+    }
+
+    function selectDistrict(key){
+      if(!districts[key]||!isUnlocked(key)) return;
+      closeWindows();
+      if(state.district===key){
+        say('你正在'+districts[key].name+'。右上角街道图列出了这片城区的具体地点。','城区总览');
+        return;
+      }
+      state.district=key; state.place=null; state.pending=null; passTime();
+      addLog('前往'+districts[key].name+'。');
+      const firstVisit=!state.visitedDistricts[key];
+      state.visitedDistricts[key]=true;
+      say(firstVisit?'你来到'+districts[key].name+'。'+districts[key].copy:'你回到'+districts[key].name+'。街道图列出了这片城区的具体地点。','抵达城区');
+      render();
+    }
+    function moveTo(key){
+      if(!places[key]||places[key].district!==state.district||!isUnlocked(key)) return;
+      closeWindows();
+      if(state.place===key){say('你已经在这里。把光移到地图标记上，看看还有什么被留下。','场景提示');return;}
+      state.place=key; state.pending=null; passTime();
+      addLog('前往'+places[key].name+'。');
+      const firstVisit=!state.visitedPlaces[key];
+      state.visitedPlaces[key]=true;
+      say(firstVisit?'你花了些时间走到'+places[key].name+'。'+places[key].copy:'你回到'+places[key].name+'。街道图仍可前往城区内的其他地点。','抵达');
+      render();
+    }
+    function closeWindows(){
+      ['world-window','notebook-window','archive-board','supply-shop-window'].forEach(id=>$(id).classList.remove('open'));
+      $('window-shade').hidden=true;
+      document.querySelectorAll('[data-open-window]').forEach(button=>button.classList.remove('active'));
+    }
+    function openWindow(id,view='canvas'){
+      closeWindows();
+      const target=$(id);
+      if(!target) return;
+      if(id==='archive-board'){
+        panelView=view==='shop'?'shop':'canvas';
+        const shopMode=panelView==='shop';
+        $('archive-board').classList.toggle('shop-view',shopMode);
+        $('board-title').textContent=shopMode?'灰钟线索铺':'真相画布与卡牌合成';
+        $('board-subtitle').textContent=shopMode?'购买线索卡并留意经济阵营羁绊。购买的卡牌会直接加入真相画布。':'把卡牌拖入画布右下角执行区，再选择阵营。空白处可平移，滚轮可缩放。';
+        $('board-kicker').textContent=shopMode?'THE CLUE COUNTER':'THE EVIDENCE BOARD';
+        sendPanel({type:shopMode?'truth-show-shop':'truth-show-canvas'});
+      }
+      target.classList.add('open');
+      $('window-shade').hidden=false;
+      const trigger=document.querySelector('[data-open-window="'+id+'"]');
+      if(trigger) trigger.classList.add('active');
+    }
+    function renderSupplyShop(){
+      const stock=$('supply-stock'); stock.innerHTML='';
+      supplyGoods.forEach(good=>{
+        const card=document.createElement('article'); card.className='supply-item';
+        const title=document.createElement('h4'); title.textContent=good.item;
+        const copy=document.createElement('p'); copy.textContent=good.description;
+        const button=document.createElement('button'); button.dataset.buySupply=good.id;
+        button.textContent='购买 · '+good.price+' 金币'; button.disabled=state.coins<good.price;
+        card.append(title,copy,button); stock.appendChild(card);
+      });
+      $('supply-balance').textContent=state.coins;
+    }
+    function openSupplyShop(){$('supply-status').textContent='';renderSupplyShop();openWindow('supply-shop-window');}
+    function openClueShop(){say('老板把几摞旧报纸推到柜台前。挑选线索时，也可以留意画布中已经形成的经济阵营羁绊。','灰钟线索铺老板');openWindow('archive-board','shop');}
+    function inspectSpot(id){
+      if(state.pending) return;
+      const spot=currentPlace().spots.find(s=>s.id===id);
+      if(!spot||spot.chapter>state.chapter) return;
+      if(spot.shop==='supplies'){say(spot.text,spot.who);openSupplyShop();return;}
+      if(spot.shop==='clues'){openClueShop();return;}
+      const done=!!state.done[spot.id];
+      if(!done&&!unlockedAtPeriod(spot)){
+        say(spot.who+'现在不在场。可以先调查别处，等到'+spot.at.map(i=>periods[i].name).join('或')+'再来。','尚未开放');
+        return;
+      }
+      if(done&&spot.choices){state.pending=spot.id;renderScene();return;}
+      if(done){
+        const rewards=[];
+        if(spot.item) rewards.push('物品「'+spot.item+'」已在随身物品中');
+        if(spot.card) rewards.push('相关卡牌已放入真相画布');
+        say('你已经调查过「'+spot.name+'」。'+(rewards.length?rewards.join('；')+'。':'这处环境已经调查过了。'),spot.who);
+        return;
+      }
+      if(!requirementsMet(spot)){
+        const missing=spot.requires.filter(name=>!getItem(name));
+        say('这处调查需要：'+missing.join('、')+'。先在场景里寻找相关物件。','谜题提示');
+        return;
+      }
+      if(spot.choices){
+        state.pending=spot.id; renderScene(); return;
+      }
+      state.done[spot.id]=true; passTime();
+      if(spot.item) gainItem(spot.item);
+      if(spot.card) giveCard(spot.card);
+      if(spot.mood) state.mood=cap(state.mood+spot.mood,0,100);
+      if(spot.coins) state.coins+=spot.coins;
+      const message=spot.rewardText||spot.text;
+      say(message,spot.who); addLog((spot.item?'收集 '+spot.item+'。':'')+(spot.card?'获得卡牌。':'')+spot.name+'：'+message);
+      notify(spot.card?'新卡牌已放入真相画布':(spot.item?'收集到：'+spot.item:'调查记录已更新'));
+      render(); sendPanel({type:'story-set-gold',gold:state.coins});
+    }
+    function choose(index){
+      if(!state.pending) return;
+      const spot=findSpot(state.pending), choice=spot&&spot.choices[Number(index)];
+      if(!spot||!choice) return;
+      const completed=state.dialogueDone[spot.id]||[];
+      const choiceIndex=Number(index);
+      if(completed.includes(choiceIndex)) return;
+      if(choice.requiresFaction&&choice.requiresFaction!==state.faction){
+        say('这段对话需要「'+factionNames[choice.requiresFaction]+'」倾向。请在随身笔记中调整倾向后再试。',spot.who);
+        return;
+      }
+      if(!state.dialogueDone[spot.id]) state.dialogueDone[spot.id]=[];
+      state.dialogueDone[spot.id].push(choiceIndex);
+      state.done[spot.id]=true; state.pending=null; passTime();
+      changeFaction(choice.faction||state.faction);
+      if(choice.item) gainItem(choice.item);
+      if(choice.coins) state.coins=cap(state.coins+choice.coins,0,99);
+      if(choice.mood) state.mood=cap(state.mood+choice.mood,0,100);
+      if(choice.card) giveCard(choice.card);
+      const cardMessage=choice.cardName?'获得线索卡「'+choice.cardName+'」，已放入真相画布。':'';
+      const message=choice.text+(cardMessage?' '+cardMessage:'');
+      say(message,spot.who); addLog(spot.name+'：'+message);
+      if(choice.faction) addLog('你的倾向更接近「'+factionNames[choice.faction]+'」。');
+      if(choice.cardName) notify('新线索卡：'+choice.cardName);
+      render(); sendPanel({type:'story-set-gold',gold:state.coins});
+    }
+    function rest(){
+      passTime(); state.fatigue=cap(state.fatigue-24,0,100); state.mood=cap(state.mood+3,0,100);
+      addLog('靠在旧文件柜旁歇了一会儿。');
+      say('你闭上眼睛。楼上的钟声只敲了两下，第三下像是被谁吞掉了。','短暂休息');
+      render();
+    }
+    function eat(){
+      if(!consumeItem('干粮')) return;
+      state.hunger=cap(state.hunger-32,0,100); state.mood=cap(state.mood+2,0,100);
+      addLog('吃掉一份干粮。'); say('干粮很硬，至少能让你继续工作。','补给'); render();
+    }
+    function drink(){
+      if(!consumeItem('水壶')) return;
+      state.thirst=cap(state.thirst-34,0,100); addLog('喝了水壶里的水。');
+      say('水有一股淡淡的铁锈味。','补给'); render();
+    }
+    function drinkTea(){
+      if(!consumeItem('热茶')) return;
+      state.thirst=cap(state.thirst-21,0,100); state.fatigue=cap(state.fatigue-8,0,100);
+      addLog('喝掉一杯热茶。'); say('热茶暖过喉咙，稍稍驱散了疲倦。','补给'); render();
+    }
+    function buySupply(id){
+      const good=supplyGoods.find(entry=>entry.id===id);
+      if(!good) return;
+      if(state.coins<good.price){$('supply-status').textContent='金币不足，暂时买不起这件补给。';return;}
+      state.coins-=good.price; gainItem(good.item);
+      $('supply-status').textContent='已购入「'+good.item+'」，现在可以在随身笔记中使用。';
+      addLog('在鸦钟杂货铺购买 '+good.item+'，花费 '+good.price+' 金币。');
+      say('你把「'+good.item+'」收进随身物品。','鸦钟杂货铺老板');
+      notify('补给已放入随身物品：'+good.item);
+      render(); sendPanel({type:'story-set-gold',gold:state.coins});
+    }
+    function onEnding(cardId,name){
+      const act=activeChapter();
+      const outcome=endingOutcomes[cardId];
+      if(!outcome||!act.endingIds.includes(cardId)||state.finished) return;
+      state.endingsCrafted[cardId]=true;
+      state.consumedCards[cardId]=false;
+      state.routeCards.push({chapter:state.chapter,title:outcome.title});
+      if(state.chapter<chapters.length-1){
+        state.chapter++;
+        const next=activeChapter();
+        state.coins+=3; state.mood=cap(state.mood+8,0,100); state.place=next.place; state.district=places[next.place].district;
+        state.visitedPlaces[next.place]=true;
+        addLog('结局卡「'+name+'」推进了调查。获得 3 金币。');
+        say(outcome.advance+' '+next.lead,'案件推进');
+        notify('新地点开放：'+places[next.place].name);
+      }else{
+        state.finished=true;
+        const factionClosures={
+          doubt:'你把证词、录音与反证一并公开，让镇上的人自己判断谁说了真话。',
+          order:'你将证据封入公证档案，并留下不可删除的索引，任何人都能追查它的来源。',
+          economy:'你公开委员会的往来账目，让市民决定该由谁承担代价、资源又该流向谁。',
+          innovation:'你把原始材料送进城市广播网，每个人都得到一份可以继续修订和传递的档案。'
+        };
+        const routeSummary=state.routeCards.slice(0,-1).map(entry=>'「'+entry.title+'」').join('、');
+        const recap=routeSummary?'前两案留下的判断是：'+routeSummary+'。':'';
+        const finalText=recap+outcome.final+' '+(factionClosures[state.faction]||factionClosures.doubt);
+        $('finale-title').textContent=outcome.title;
+        $('finale-text').textContent=finalText;
+        addLog('最终结局：'+outcome.title+'。');
+        say('结局卡「'+name+'」记录了你的结论。'+(routeSummary?'此前两案的结论仍保存在随身笔记中。':''),'最终结局');
+        notify('调查完成：'+outcome.title);
+      }
+      render(); sendPanel({type:'story-set-gold',gold:state.coins});
+    }
+    function resetGame(){
+      state=copyState(initialState); $('interaction').innerHTML='';
+      $('finale-title').textContent=''; $('finale-text').textContent='';
+      frame.src='truth-panel2.html'; panelReady=false;
+      addLog('建立新档案。调查从市政档案馆开始。');
+      say('你醒在一张堆满旧案卷的桌子底下。门外的钟敲了七下，最后一下没有声音。点击场景标记调查，或从右上角街道图前往城区内的地点。','开档');
+      render();
+    }
+    document.addEventListener('click',event=>{
+      const open=event.target.closest('[data-open-window]');
+      if(open){openWindow(open.dataset.openWindow);return;}
+      if(event.target.closest('[data-close-window]')||event.target.id==='window-shade'){closeWindows();return;}
+      const supplyPurchase=event.target.closest('[data-buy-supply]');
+      if(supplyPurchase){buySupply(supplyPurchase.dataset.buySupply);return;}
+      const district=event.target.closest('[data-district]');
+      if(district){selectDistrict(district.dataset.district);return;}
+      const place=event.target.closest('[data-place]');
+      if(place){moveTo(place.dataset.place);return;}
+      const spot=event.target.closest('[data-spot]');
+      if(spot){inspectSpot(spot.dataset.spot);return;}
+      const dismissDialog=event.target.closest('[data-dismiss-dialog]');
+      if(dismissDialog){state.pending=null;say('你暂时结束了这次交谈。','交谈结束');render();return;}
+      const choice=event.target.closest('[data-choice]');
+      if(choice){choose(choice.dataset.choice);return;}
+    });
+    $('faction').addEventListener('change',event=>{state.faction=event.target.value;addLog('选择了「'+factionNames[state.faction]+'」倾向。');renderLog();if(state.pending)renderScene();});
+    $('rest').addEventListener('click',rest);
+    $('eat').addEventListener('click',eat);
+    $('drink').addEventListener('click',drink);
+    $('drink-tea').addEventListener('click',drinkTea);
+    $('jump-board').addEventListener('click',()=>openWindow('archive-board'));
+    $('restart').addEventListener('click',()=>{
+      if(window.confirm('重开档案会清除这次调查进度。确定重来吗？')) resetGame();
+    });
+    frame.addEventListener('load',()=>{
+      panelReady=true;
+      updateCardSync();
+      sendPanel({type:panelView==='shop'?'truth-show-shop':'truth-show-canvas'});
+    });
+    try{
+      if(frame.contentDocument&&frame.contentDocument.readyState==='complete'){
+        panelReady=true;
+        updateCardSync();
+        sendPanel({type:panelView==='shop'?'truth-show-shop':'truth-show-canvas'});
+      }
+    }catch(error){}
+    window.addEventListener('message',event=>{
+      if(event.source!==frame.contentWindow||!event.data) return;
+      if(event.data.type==='truth-gold-changed'){
+        state.coins=cap(Number(event.data.gold)||0,0,99);
+        if(event.data.action==='buy-clue'){
+          if(event.data.cardId){state.purchasedCards[event.data.cardId]=true;state.consumedCards[event.data.cardId]=false;}
+          if(event.data.freeCardId){state.purchasedCards[event.data.freeCardId]=true;state.consumedCards[event.data.freeCardId]=false;}
+          addLog('在线索商店购买「'+event.data.cardName+'」。'+(event.data.rebate?'经济羁绊返还了 1 金币。':''));
+        }
+        else if(event.data.action==='sell-clue'){
+          if(event.data.cardId){state.purchasedCards[event.data.cardId]=false;state.storyCards[event.data.cardId]=false;state.consumedCards[event.data.cardId]=true;}
+          addLog('在线索商店出售「'+event.data.cardName+'」，获得 '+event.data.earned+' 金币。');
+        }
+        else if(event.data.action==='gamble') addLog('在线索商店参与赌博，'+event.data.result+'。');
+        render(); sendPanel({type:'story-set-gold',gold:state.coins});
+      }
+      if(event.data.type==='truth-question-crafted'){
+        const act=activeChapter();
+        (event.data.consumedCardIds||[]).forEach(id=>{state.consumedCards[id]=true;});
+        state.questionsCrafted[event.data.cardId]=true;
+        state.consumedCards[event.data.cardId]=false;
+        if(act.questionIds.includes(event.data.cardId)){
+          addLog('画布合成关键问题：「'+event.data.name+'」。');
+          notify('关键问题已合成；可与对应真相卡组合');
+        }
+        render();
+      }
+      if(event.data.type==='truth-ending-crafted'){
+        (event.data.consumedCardIds||[]).forEach(id=>{state.consumedCards[id]=true;});
+        onEnding(event.data.cardId,event.data.name);
+      }
+    });
+    window.addEventListener('keydown',event=>{
+      if(event.key==='Escape'){
+        if(!$('window-shade').hidden){closeWindows();return;}
+        if(state.pending){state.pending=null;say('你暂时没有作答。','对话已收起');render();}
+      }
+      if(event.key.toLowerCase()==='m') openWindow('world-window');
+      if(event.key.toLowerCase()==='i') openWindow('notebook-window');
+      if(event.key.toLowerCase()==='j') openWindow('archive-board');
+    });
+    addLog('建立新档案。调查从市政档案馆开始。');
+    say('你醒在一张堆满旧案卷的桌子底下。门外的钟敲了七下，最后一下没有声音。点击场景标记调查，或从右上角街道图前往城区内的地点。','开档');
+    render();
+  })();
+  </script>
+</body>
+</html>
