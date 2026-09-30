@@ -114,6 +114,10 @@
     .spot-button:disabled { cursor:default; }
     .spot-glyph { font-size:14px; width:18px; text-align:center; }
     .interaction { position:absolute; z-index:10; left:18px; bottom:17px; width:min(64vw,760px); min-height:112px; max-height:28vh; overflow:auto; padding:11px 15px; border:1px solid var(--ink); border-left:4px solid var(--ink); background:rgba(242,237,226,.96); box-shadow:4px 4px 0 var(--shadow); }
+    .interaction.has-art { display:flex; align-items:flex-start; gap:11px; }
+    .interaction-art { flex:0 0 52px; width:52px; height:64px; border:1px solid var(--rule); background:#e3ddcf; box-shadow:2px 2px 0 var(--shadow); }
+    .interaction-art svg { display:block; width:100%; height:100%; }
+    .interaction-copy { min-width:0; flex:1; }
     .interaction .who { font-size:10px; color:var(--red); letter-spacing:.13em; margin-bottom:4px; }
     .interaction p { font-size:12px; line-height:1.7; margin:0; }
     .choice-list { display:grid; gap:5px; margin-top:8px; }
@@ -141,12 +145,18 @@
     .notebook .time-panel { gap:5px; }
     .notebook .time-panel .quiet-button { padding:5px 7px; }
     #inventory-block { grid-column:1/-1; }
+    #investment-block { grid-column:1/-1; }
     #log-block { grid-column:1/-1; }
     .notebook-block { margin:0; min-width:0; border:1px solid var(--rule); padding:9px; background:rgba(242,237,226,.78); }
     .notebook-label { border-bottom:1px dotted var(--rule); padding-bottom:5px; margin-bottom:6px; font:10px Arial,sans-serif; letter-spacing:.16em; color:var(--red); text-transform:uppercase; }
     .inventory { display:flex; flex-wrap:wrap; gap:5px; min-height:28px; }
-    .item { background:#e3ddcf; border:1px solid var(--rule); padding:4px 6px; font-size:10px; }
+    .item { display:inline-flex; align-items:center; gap:5px; background:#e3ddcf; border:1px solid var(--rule); padding:3px 6px 3px 4px; font-size:10px; }
+    .item-art { display:inline-flex; width:24px; height:26px; align-items:center; justify-content:center; color:var(--ink); }
+    .item-art svg { display:block; width:100%; height:100%; }
     .item .qty { color:var(--ink-faint); }
+    .investment-summary { color:var(--ink-soft); font-size:10px; line-height:1.65; }
+    .investment-row { display:flex; flex-wrap:wrap; gap:8px 14px; }
+    .investment-tag { border:1px solid var(--rule); padding:4px 7px; background:#e3ddcf; }
     .log { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:22px; max-height:150px; overflow:auto; padding:0 0 0 16px; margin:0; font-size:10px; line-height:1.55; }
     .log li { padding:2px 4px 5px 0; border-bottom:1px dotted rgba(140,133,118,.55); }
     .log time { color:var(--red); font-variant-numeric:tabular-nums; }
@@ -178,8 +188,18 @@
     .supply-item button:hover:not(:disabled) { color:var(--paper-light); background:var(--ink); }
     .supply-item button:disabled { opacity:.5; cursor:not-allowed; }
     .supply-status { min-height:17px; margin:10px 0 0; color:var(--red); font-size:10px; }
+    .investment-window { display:none; }
+    .investment-window.open { display:block; position:fixed; z-index:201; width:min(92vw,620px); max-height:84vh; left:50%; top:50%; transform:translate(-50%,-50%); overflow:auto; }
+    .investment-window .panel-inner { padding:17px; }
+    .investment-card { margin-top:12px; border:1px solid var(--rule); padding:12px; background:rgba(242,237,226,.82); }
+    .investment-card h4 { margin:0 0 5px; font-size:14px; }
+    .investment-card p { margin:0 0 8px; color:var(--ink-soft); font-size:10px; line-height:1.6; }
+    .investment-card button { border:1px solid var(--ink); padding:7px 10px; background:transparent; cursor:pointer; font-size:10px; }
+    .investment-card button:hover:not(:disabled) { color:var(--paper-light); background:var(--ink); }
+    .investment-card button:disabled { opacity:.5; cursor:not-allowed; }
+    .investment-status { min-height:18px; margin:9px 0 0; color:var(--red); font-size:10px; }
     .window-close { float:right; border:1px solid var(--ink); background:transparent; padding:5px 9px; cursor:pointer; font-size:11px; }
-    .world-window .window-close,.notebook .window-close,.archive-board .window-close,.supply-shop-window .window-close { position:absolute; top:11px; right:12px; z-index:5; float:none; }
+    .world-window .window-close,.notebook .window-close,.archive-board .window-close,.supply-shop-window .window-close,.investment-window .window-close { position:absolute; top:11px; right:12px; z-index:5; float:none; }
     .footer { display:none; }
     .window-shade { position:fixed; z-index:200; inset:0; background:rgba(26,24,21,.68); }
     .toast { position:fixed; z-index:300; right:18px; bottom:18px; max-width:min(380px,calc(100vw - 36px)); background:var(--ink); color:var(--paper-light); border:1px solid var(--paper-light); padding:10px 13px; box-shadow:3px 3px 0 var(--shadow); font-size:12px; opacity:0; transform:translateY(8px); transition:.2s; pointer-events:none; }
@@ -214,6 +234,8 @@
       .jump { display:none; }
       .mini-map { top:7px; right:7px; width:30vw; min-width:126px; max-width:190px; height:108px; }
       .interaction { left:8px; right:8px; bottom:7px; width:auto; min-height:102px; max-height:23vh; padding:8px 10px; }
+      .interaction-art { flex-basis:40px; width:40px; height:50px; }
+      .interaction.has-art { gap:8px; }
       .spot-button { font-size:8px; padding:3px 6px 3px 4px; min-height:25px; }
       .spot-glyph { font-size:11px; width:14px; }
       .place-pin { width:84px; font-size:8px; }
@@ -224,10 +246,11 @@
       .finale { padding:8vh 5vw; }
       .notebook.open { width:94vw; height:90vh; }
       .notebook > .panel-inner { display:grid; grid-template-columns:1fr; gap:8px; padding:10px; }
-      .notebook .status-panel,.notebook .story-panel,#inventory-block,#log-block { grid-column:1/-1; }
+      .notebook .status-panel,.notebook .story-panel,#inventory-block,#investment-block,#log-block { grid-column:1/-1; }
       .notebook .story-panel .panel-inner { display:block; padding:8px; }
       .notebook .story-panel .goal-row { margin-top:6px; }
       .supply-shop-window.open { width:94vw; max-height:88vh; }
+      .investment-window.open { width:94vw; max-height:88vh; }
       .supply-stock { grid-template-columns:1fr; }
       .log { grid-template-columns:1fr; max-height:26vh; }
     }
@@ -386,6 +409,29 @@
               <path class="fine" d="m823 416 45-146m-28 168 64-10M251 561q69-44 133 0m431-8q70-49 142 0"/>
               <path class="hatchfill" d="M154 560v-59h116v59zM928 554v-66h125v66z"/>
             </g>
+            <g id="art-convenience" style="display:none">
+              <path class="wash" d="M0 107 1200 81v484L0 606Z"/>
+              <path class="inkline" d="M0 607 1200 562M0 648 1200 607"/>
+              <path class="hatchfill" d="M102 177h355v300H102zM744 164h354v300H744z"/>
+              <path class="inkline" d="M102 247h355m-355 78h355m-355 78h355M744 236h354m-354 78h354m-354 78h354"/>
+              <path class="wash" d="M135 194h54v42h-54zM220 194h54v42h-54zM307 194h54v42h-54zM390 194h38v42h-38zM785 183h47v44h-47zM859 183h64v44h-64zM951 183h47v44h-47zM1020 183h52v44h-52z"/>
+              <path class="solid" d="M183 520v-91q203-71 406 0v91h-19v-58H203v58z"/>
+              <path class="fine" d="M226 457h327m-295 18v40m262-40v40M0 123h1200"/>
+              <path class="inkline" d="M572 172h56v264h-56zM586 182h28m-28 19h28m-28 19h28"/>
+            </g>
+            <g id="art-bar" style="display:none">
+              <path class="wash" d="M0 114 1200 82v487L0 612Z"/>
+              <path class="inkline" d="M0 613 1200 570M0 652 1200 613"/>
+              <path class="hatchfill" d="M80 109h1040v309H80z"/>
+              <path class="inkline" d="M600 109V33m-140 77V51m280 54V42"/>
+              <path class="solid" d="M560 32h80l-13 46h-54zM414 49h52l-8 36h-36zM734 40h52l-8 38h-36z"/>
+              <path class="wash" d="M145 170h158v231H145zM897 161h158v240H897z"/>
+              <path class="inkline" d="M164 196h120m-120 26h120m-120 27h120m-120 27h120M916 190h120m-120 26h120m-120 27h120m-120 27h120"/>
+              <path class="solid" d="M316 439q284-120 568 0v52H316zM284 491h632v29H284z"/>
+              <path class="fine" d="M379 520v68m177-68v68m177-68v68m-382 0h90m132 0h90m132 0h90"/>
+              <path class="hatchfill" d="M1000 503v104h82V503m-112 104h142"/>
+              <path class="solid" d="M1009 477h62v15h-62zM1018 439h46v38h-46z"/>
+            </g>
             <rect width="1200" height="760" fill="url(#vignette)"/>
             <path d="M18 18h1164v724H18z" fill="none" stroke="#25231e" stroke-opacity=".46" stroke-width="2"/>
             <path d="M31 31h1138v698H31z" fill="none" stroke="#25231e" stroke-opacity=".25" stroke-width="1"/>
@@ -416,6 +462,10 @@
             <div class="notebook-label">随身物件 / Inventory</div>
             <div class="inventory" id="inventory"></div>
           </div>
+          <div class="notebook-block" id="investment-block" hidden>
+            <div class="notebook-label">投资档案 / Investment Ledger</div>
+            <div class="investment-summary" id="investment-summary"></div>
+          </div>
           <div class="notebook-block" id="log-block">
             <div class="notebook-label">调查记录 / Field Notes</div>
             <ol class="log" id="log"></ol>
@@ -427,11 +477,28 @@
     <section class="supply-shop-window panel" id="supply-shop-window">
       <div class="panel-inner">
         <button class="window-close" data-close-window>关闭 ×</button>
-        <div class="section-title"><h3>鸦钟杂货铺</h3><small>SUPPLIES & PROVISIONS</small></div>
+        <div class="section-title"><h3>鸦钟便利店</h3><small>SUPPLIES & PROVISIONS</small></div>
         <p class="supply-intro">老板把补给按用途摆好：干粮能撑过漫长的调查，水壶装着清水，热茶则能驱散一些疲惫。</p>
         <p class="supply-balance">随身金币：<b id="supply-balance">5</b></p>
         <div class="supply-stock" id="supply-stock"></div>
         <p class="supply-status" id="supply-status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section class="investment-window panel" id="investment-window">
+      <div class="panel-inner">
+        <button class="window-close" data-close-window>关闭 ×</button>
+        <div class="section-title"><h3>雾钟镇投资簿</h3><small>PERIODIC DIVIDENDS</small></div>
+        <p class="supply-intro">经济阵营 T5 开放认购。每份股份消耗金币；早上、下午、晚上每跨过一个时段结算一次，酒吧波动较大，便利店相对平稳，均可能亏损。</p>
+        <p class="supply-balance">随身金币：<b id="investment-balance">5</b>　·　经济结局卡：<b id="investment-tier-count">0 / 10</b></p>
+        <div class="investment-card">
+          <h4 id="investment-business-name">三刻钟酒吧</h4>
+          <p id="investment-business-description"></p>
+          <p>当前持股：<b id="investment-shares">0</b>　·　每份价格：<b id="investment-share-price">6</b> 金币</p>
+          <button id="investment-buy">认购一份</button>
+        </div>
+        <p class="investment-status" id="investment-status" aria-live="polite"></p>
+        <div class="investment-summary" id="investment-window-summary"></div>
       </div>
     </section>
 
@@ -493,6 +560,18 @@
       END_12:{title:'牙医',advance:'牙医从免费咖啡的杯沿找到一小片封蜡。封蜡边缘的齿痕，与天文台铜柜上的缺口完全吻合。',final:'牙医从封蜡与齿痕还原出被撬开的铜柜，确定有人在举报副本封存后动过手脚。'},
       END_13:{title:'好友',advance:'一位多年好友邀请所有证人参加节庆聚会。有人在节日当晚缺席，缺席记录上却盖着书记员的印章。',final:'好友在节日聚会中召集证人，缺席名单最终指向替委员会保管密封记录的人。'}
     };
+    const endingArchiveKey='fogbell.ending-archive.v1';
+    function readEndingArchive(){
+      try{
+        const saved=JSON.parse(window.localStorage.getItem(endingArchiveKey)||'[]');
+        return Array.isArray(saved)?saved.filter(entry=>entry&&/^END_\d+$/.test(entry.cardId)&&Array.isArray(entry.bonuses)):[];
+      }catch(error){return [];}
+    }
+    let endingArchive=readEndingArchive();
+    const investmentBusinesses={
+      convenience:{name:'鸦钟便利店',price:6,maxShares:8,description:'货品周转快，回报相对平稳。每份股份每周期随机结算 −1、0、1、1、2 或 3 金币。',returns:[-1,0,1,1,2,3]},
+      bar:{name:'三刻钟酒吧',price:6,maxShares:8,description:'酒水生意起伏大，可能大赚，也可能亏损。每份股份每周期随机结算 −3、−1、0、1、3 或 7 金币。',returns:[-3,-1,0,1,3,7]}
+    };
     const districts = {
       civic:{name:'市政区',tag:'CIVIC QUARTER',symbol:'▤',x:19,y:34,unlockedAt:0,art:'archive',copy:'市政区的石街沿着档案馆与登记处铺开。临近黄昏时，街角茶摊的灯总比路灯先亮。'},
       bell:{name:'钟楼区',tag:'BELL TOWER WARD',symbol:'⌂',x:43,y:48,unlockedAt:0,art:'crow',copy:'钟楼的影子把小鸦巷分成两半。这里的院门很窄，街坊却能听见隔两条街的车铃。'},
@@ -511,7 +590,7 @@
       crow:{name:'小鸦巷',tag:'CROW ALLEY',symbol:'⌂',district:'bell',x:51,y:49,unlockedAt:0,copy:'几间窄房挤在钟楼的阴影下。院门敞开，墙上的粉线像一道被划掉的句子。',spots:[
         {id:'bell',name:'车轮旁的泥坑',glyph:'◌',x:28,y:40,chapter:0,once:true,who:'泥坑',text:'泥里有半圈浅痕。车铃被扭下来时，金属边缘留下了咬痕。',item:'裂口铜铃'},
         {id:'wall-trace',name:'墙上的白粉线',glyph:'╱',x:69,y:35,chapter:0,once:true,requires:['裂口铜铃'],who:'白粉线',text:'把铜铃的缺口对上墙上的刮痕，方向正好指向院门。有人把车推走了，又特意回来擦掉轮印。',card:'CLUE_0',item:'粉笔拓片',rewardText:'解开场景谜题，获得线索卡：被破坏的院子。'},
-        {id:'broken-eggs',name:'院墙下的碎鸟蛋',glyph:'◌',x:43,y:72,chapter:0,once:true,who:'院墙下',text:'碎壳里沾着蓝色封蜡。乌鸦叼走的似乎不是食物，而是挂在车上的一小块蜡封。',card:'CLUE_2',item:'沾蜡的鸟蛋碎壳',rewardText:'发现线索卡：碎掉的鸟蛋。'},
+        {id:'broken-eggs',name:'院墙下的碎鸟蛋',glyph:'◌',x:43,y:72,chapter:0,once:true,who:'院墙下',puzzle:{question:'三片碎壳上的蜡迹能拼成什么形状？',options:['朝院门倾斜的车铃缺口','完整的鸟巢圆环','档案馆的方形印章'],answer:0,hint:'留意碎壳边缘相同的蓝色封蜡。'},text:'碎壳里沾着蓝色封蜡。乌鸦叼走的似乎不是食物，而是挂在车上的一小块蜡封。',card:'CLUE_2',item:'沾蜡的鸟蛋碎壳',rewardText:'解开碎壳拼合谜题，发现线索卡：碎掉的鸟蛋。'},
         {id:'neighbor',name:'二楼的邻居',glyph:'♙',x:79,y:53,chapter:0,once:true,who:'隔壁邻居',at:[1,2],intro:'她在窗后放下一杯已经凉透的茶。“那辆车每天都挡住我家的门。可我没有碰它。”',repeatText:'她仍坐在窗边：“那辆车的事，我已经告诉过你了。”',choices:[
           {label:'把她谈到的昨夜争吵逐字记进笔记。',text:'她承认昨夜确实和车主争吵过，却说争吵时脚踏车还停在院里。',faction:'doubt',mood:7,card:'CLUE_1',cardName:'争吵'},
           {label:'承诺替她修好院门。',text:'她把一枚铜钥匙递给你。院门原来一直锁不上。',faction:'innovation',requiresFaction:'innovation',item:'旧院门钥匙',mood:4},
@@ -522,8 +601,8 @@
         {id:'minutes',name:'被抽页的会议簿',glyph:'▤',x:24,y:39,chapter:1,once:true,who:'会议簿',text:'被撕掉的那页留下了压痕：集会原定在午夜举行，参加者名单却全被改成同一个词。',item:'会议簿压痕',card:'TRUTH_1',rewardText:'获得真相卡：无名者的发展。'},
         {id:'flyer',name:'椅脚下的传单',glyph:'▱',x:73,y:43,chapter:1,once:true,who:'旧传单',text:'传单号召每个工人把自己的名字写下来。墨迹被水泡开，唯独“我们”两个字还很清楚。',item:'夜会传单'},
         {id:'clock-punch',name:'停住的打卡钟',glyph:'◷',x:79,y:75,chapter:1,once:true,requires:['夜会传单'],who:'打卡钟谜题',text:'传单上的折痕与打卡纸条吻合。有人把午夜的记录整齐地剪了下来，带走的不是一页纸，而是一群人的下班时间。',card:'CLUE_3',item:'剪下的时刻',rewardText:'解开会堂谜题，获得线索卡：联手罢工。'},
-        {id:'seminar-notes',name:'讲台上的研讨记录',glyph:'▤',x:27,y:63,chapter:1,once:true,who:'研讨记录',text:'记录把集会称作学术研讨会，页边却写着“不得讨论谁有资格决定他人的未来”。',card:'CLUE_5',item:'研讨会记录',rewardText:'发现线索卡：学术研讨会。'},
-        {id:'party-ticket',name:'后台的狂欢派对票根',glyph:'▱',x:59,y:34,chapter:1,once:true,who:'后台票根',text:'票根印着“只管今晚”。背面有人写下：委员会的人来过，之后音乐才被掐断。',card:'CLUE_6',item:'派对票根',rewardText:'发现线索卡：狂欢派对！'},
+        {id:'seminar-notes',name:'讲台上的研讨记录',glyph:'▤',x:27,y:63,chapter:1,once:true,requires:['夜会传单'],who:'研讨记录',puzzle:{question:'传单被水泡掉大半后，唯一清楚的词是什么？',options:['我们','命令','服从'],answer:0,hint:'回想椅脚下那张传单上没有被水泡开的字。'},text:'记录把集会称作学术研讨会，页边却写着“不得讨论谁有资格决定他人的未来”。',card:'CLUE_5',item:'研讨会记录',rewardText:'解开研讨记录谜题，发现线索卡：学术研讨会。'},
+        {id:'party-ticket',name:'后台的狂欢派对票根',glyph:'▱',x:59,y:34,chapter:1,once:true,at:[2],requires:['手写姓名纸'],who:'后台票根',puzzle:{question:'票根背后的来访顺序哪一项与墨迹相符？',options:['委员会来访，然后音乐被掐断','音乐先停，委员会才赶到','两件事相隔整整一天'],answer:0,hint:'比较票根上的墨迹覆盖顺序和手写姓名纸的晚间记号。'},text:'票根印着“只管今晚”。背面有人写下：委员会的人来过，之后音乐才被掐断。',card:'CLUE_6',item:'派对票根',rewardText:'解开后台时序谜题，发现线索卡：狂欢派对！'},
         {id:'organizer',name:'收椅子的组织者',glyph:'♙',x:49,y:81,chapter:1,once:true,who:'组织者',at:[1],intro:'他一边收椅子，一边数着空位。“那天晚上没有人缺席。名单上缺席的只有名字。”',repeatText:'组织者把椅子排回原处：“这些位置还在，名字也没有被忘掉。”',choices:[
           {label:'询问集会是否还在别处继续。',text:'他把一张线下活动单递给你：“大家不再只在会堂见面。”',faction:'doubt',item:'手写姓名纸',mood:8,card:'CLUE_4',cardName:'线下活动'},
           {label:'把证据送去委员会。',text:'“他们会把纸收走。”他还是把纸递给了你。',faction:'order',requiresFaction:'order',mood:-3,coins:1},
@@ -539,8 +618,8 @@
           {label:'询问那场没有出席的委员会会议。',text:'他翻出一页无人签收的会议通知：“缺席的人后来都领到了补贴。”',faction:'economy',card:'CLUE_16',cardName:'缺席会议'},
           {label:'问他是谁教会他盖封条。',text:'“我只按样本做事。”他避开了你的目光。',faction:'doubt',requiresFaction:'doubt',mood:3}
         ]},
-        {id:'medical-register',name:'铜柜底层的移植登记',glyph:'▤',x:50,y:43,chapter:2,once:true,who:'移植登记',text:'登记表上的移植名单与举报信使用同一套匿名编号。有人把病人的名字改成了“可替换部件”。',card:'CLUE_14',item:'匿名移植名单',rewardText:'发现线索卡：器官移植。'},
-        {id:'research-docket',name:'研究课题封面',glyph:'▧',x:75,y:54,chapter:2,once:true,who:'研究课题',text:'课题封面写着“组织行为预测”，经费来源却被一层薄纸覆盖。揭开后，露出委员会秘书处的印章。',card:'CLUE_15',item:'研究课题封面',rewardText:'发现线索卡：研究课题。'},
+        {id:'medical-register',name:'铜柜底层的移植登记',glyph:'▤',x:50,y:43,chapter:2,once:true,requires:['密封格式拓印'],who:'移植登记',puzzle:{question:'哪组匿名编号与举报副本的封存格式一致？',options:['同样的双点分隔编号','按出生日期排列的号码','没有分隔符的连续编号'],answer:0,hint:'对照铜柜举报副本上的封存格式拓印。'},text:'登记表上的移植名单与举报信使用同一套匿名编号。有人把病人的名字改成了“可替换部件”。',card:'CLUE_14',item:'匿名移植名单',rewardText:'解开匿名编号谜题，发现线索卡：器官移植。'},
+        {id:'research-docket',name:'研究课题封面',glyph:'▧',x:75,y:54,chapter:2,once:true,requires:['地库值守表'],who:'研究课题',puzzle:{question:'哪一个时段同时出现在研究经费记录和地库值守表上？',options:['晚间换班时','清晨开门前','午后钟楼检修时'],answer:0,hint:'对照地库值守表的换班时刻与课题封面被覆盖的账目。'},text:'课题封面写着“组织行为预测”，经费来源却被一层薄纸覆盖。揭开后，露出委员会秘书处的印章。',card:'CLUE_15',item:'研究课题封面',rewardText:'解开经费时段谜题，发现线索卡：研究课题。'},
         {id:'bonus-ledger',name:'夹层里的意外之财',glyph:'▤',x:48,y:56,chapter:2,once:true,who:'账册夹层',text:'几枚旧硬币和一张转账回执夹在账册里，金额正好等于当年举报流程的外包费用。',card:'CLUE_17',item:'转账回执',rewardText:'发现线索卡：意外之财。'},
         {id:'basement-watch',name:'通往地库的窄梯',glyph:'⌁',x:74,y:74,chapter:2,once:true,requires:['半截录音带'],who:'地库入口',text:'你按录音里的三次敲击声在地库门上敲了三下。门后有一把守夜人的椅子，椅脚沾着铜柜封蜡。',card:'CLUE_11',item:'地库值守表',rewardText:'解开地库门的声纹谜题，获得线索卡：蹲守地库。'},
         {id:'astronomer',name:'留守的占星师',glyph:'♙',x:39,y:81,chapter:2,once:true,who:'占星师',at:[2],intro:'她把一张空白星图递给你。“星星不负责替我们作证。要作证的人，得自己留下名字。”',repeatText:'占星师收起星盘：“能作证的只有留下姓名的人。”',choices:[
@@ -560,11 +639,15 @@
         {id:'square-clock',name:'钟面下的裂缝',glyph:'◷',x:49,y:39,chapter:0,once:true,who:'广场钟面',text:'裂缝从六点的位置一路爬到钟心。有人用细线把指针固定在七点，却留下了一个空齿。'},
         {id:'festival-notice',name:'钟楼区的过节告示',glyph:'▱',x:69,y:62,chapter:2,once:true,who:'广场告示栏',text:'告示邀请居民在停钟日聚会。名单里有一位委员会书记员，旁边却标着“不得入场”。',card:'CLUE_19',item:'停钟日告示',rewardText:'发现线索卡：过节。'}
       ]},
-      'provision-shop':{name:'鸦钟杂货铺',tag:'RAVEN SUPPLY',symbol:'▧',district:'bell',x:22,y:76,unlockedAt:0,artRef:'crow',copy:'杂货铺挤在钟楼区的转角，老板把干粮、水壶和热茶分门别类地码在木架上。',spots:[
-        {id:'provision-counter',name:'补给柜台',glyph:'▧',x:55,y:49,chapter:0,who:'鸦钟杂货铺老板',text:'“路上带些吃喝吧。雾钟镇的钟声很长，肚子可等不了那么久。”',shop:'supplies'}
+      'provision-shop':{name:'鸦钟便利店',tag:'RAVEN CONVENIENCE',symbol:'▧',district:'bell',x:22,y:76,unlockedAt:0,artRef:'convenience',copy:'便利店开在钟楼区转角。货架上是干粮、水壶与热茶，柜台后还压着一本写满分红和亏损的账簿。',spots:[
+        {id:'provision-counter',name:'补给柜台',glyph:'▧',x:55,y:44,chapter:0,who:'鸦钟便利店老板',text:'“路上带些吃喝吧。雾钟镇的钟声很长，肚子可等不了那么久。”',shop:'supplies'},
+        {id:'store-investment',name:'柜台下的入股账簿',glyph:'▤',x:69,y:65,chapter:0,who:'鸦钟便利店老板',text:'老板把一本账簿推到柜台边：“店面缺周转金。生意好时分红，货车晚到时也会赔钱。”',investment:'convenience'}
       ]},
       'clue-market':{name:'灰钟线索铺',tag:'GREY BELL CLUE SHOP',symbol:'▣',district:'bell',x:80,y:27,unlockedAt:0,artRef:'crow',copy:'灰钟线索铺藏在钟楼背面。老板把旧报纸、传闻和无人认领的笔记都标上了价。',spots:[
         {id:'clue-market-counter',name:'线索柜台',glyph:'▣',x:48,y:49,chapter:0,who:'灰钟线索铺老板',text:'“每条传闻都有来处。看中哪一条，就把价钱和后果都想清楚。”',shop:'clues'}
+      ]},
+      'three-quarter-bar':{name:'三刻钟酒吧',tag:'THREE-QUARTER BAR',symbol:'♜',district:'bell',x:50,y:83,unlockedAt:0,artRef:'bar',copy:'酒吧的钟总比街上的慢一刻。老板说，账本上每个空白都代表一笔还没结清的生意。',spots:[
+        {id:'bar-investment',name:'吧台后的合伙账簿',glyph:'▤',x:55,y:49,chapter:0,who:'三刻钟酒吧老板',text:'老板擦着一只空杯：“新酒桶明晚到。你愿意分担成本，也可以分走一份盈亏。”',investment:'bar'}
       ]},
       keymaker:{name:'灰鸦钥匙铺',tag:'GREY CROW LOCKSMITH',symbol:'⚿',district:'bell',x:77,y:73,unlockedAt:0,artRef:'crow',copy:'钥匙铺只挂着没有齿的钥匙。门上写着“配锁请带来门，不要带来钥匙”。',spots:[
         {id:'keymaker-door',name:'门上的钥匙孔',glyph:'⚿',x:75,y:44,chapter:0,once:true,who:'钥匙铺',text:'钥匙孔里塞着一小片蓝蜡。它的颜色和档案馆封条上的蜡完全相同。'}
@@ -580,7 +663,7 @@
       ]},
       'north-gate':{name:'北侧旧门',tag:'NORTH OLD GATE',symbol:'⌑',district:'oldtown',x:70,y:77,unlockedAt:2,artRef:'observatory',copy:'旧门外通向一条早已封闭的路。门闩上挂着一枚没有署名的铜牌。',spots:[
         {id:'north-gate-plaque',name:'没有署名的铜牌',glyph:'⌑',x:78,y:49,chapter:2,once:true,who:'北侧旧门',text:'铜牌背面有三道敲击留下的小凹痕，间距与录音里的声音相同。'},
-        {id:'public-address',name:'被撕去的公开地址',glyph:'▤',x:36,y:65,chapter:2,once:true,who:'北门告示板',text:'旧门告示曾刊出听证会地址，撕去告示的人留下了完整的钉孔和半枚委员会印章。',card:'CLUE_13',item:'地址拓印',rewardText:'发现线索卡：公开地址。'}
+        {id:'public-address',name:'被撕去的公开地址',glyph:'▤',x:36,y:65,chapter:2,once:true,requires:['手写姓名纸'],who:'北门告示板',puzzle:{question:'三个钉孔留下的纸边，哪一种能对齐听证会地址栏？',options:['纸张左边缘向下错开一格','三个钉孔水平齐平','只有中间一枚钉孔'],answer:0,hint:'公开名单底稿和手写姓名纸都留有同样的装订错位。'},text:'旧门告示曾刊出听证会地址，撕去告示的人留下了完整的钉孔和半枚委员会印章。',card:'CLUE_13',item:'地址拓印',rewardText:'解开告示拼合谜题，发现线索卡：公开地址。'}
       ]}
     };
     const factionNames={order:'秩序',economy:'经济',doubt:'质疑',innovation:'创新'};
@@ -592,7 +675,7 @@
     const initialState={
       chapter:0, day:1, period:0, faction:'doubt', coins:5,
       fatigue:18,hunger:26,thirst:21,mood:64,district:'civic',place:'archive',
-      items:{'干粮':1,'水壶':1}, done:{}, storyCards:{}, purchasedCards:{}, consumedCards:{}, questionsCrafted:{}, endingsCrafted:{}, routeCards:[], dialogueDone:{}, visitedDistricts:{civic:true}, visitedPlaces:{archive:true}, logs:[], pending:null, finished:false
+      items:{'干粮':1,'水壶':1}, done:{}, puzzleSolved:{}, activePuzzle:null, storyCards:{}, purchasedCards:{}, consumedCards:{}, questionsCrafted:{}, endingsCrafted:{}, routeCards:[], investments:{bar:0,convenience:0}, lastInvestmentReport:'尚未结算', economyTier:0, economyEndingCount:0, activeInvestment:null, dialogueDone:{}, visitedDistricts:{civic:true}, visitedPlaces:{archive:true}, logs:[], pending:null, finished:false
     };
     let state=copyState(initialState);
     const frame=document.getElementById('truth-frame');
@@ -600,7 +683,7 @@
     let panelView='canvas';
     let toastTimer=0;
     const $=id=>document.getElementById(id);
-    ['world-window','notebook-window','archive-board','supply-shop-window'].forEach(id=>document.body.appendChild($(id)));
+    ['world-window','notebook-window','archive-board','supply-shop-window','investment-window'].forEach(id=>document.body.appendChild($(id)));
     const notebookInner=$('notebook-window').querySelector('.panel-inner');
     const inventoryBlock=$('inventory-block');
     const statusPanel=document.querySelector('.status-panel');
@@ -625,16 +708,56 @@
       state.logs.unshift({day:state.day,clock:clock,text:message});
       state.logs=state.logs.slice(0,18);
     }
+    function interactionArtMarkup(who){
+      const label=who||'';
+      const npcKind=label.includes('邻居')?'neighbor':label.includes('占星师')?'astronomer':label.includes('书记员')||label.includes('馆员')?'clerk':label.includes('组织者')?'organizer':label.includes('吧台')||label.includes('酒吧')?'bartender':label.includes('老板')||label.includes('店主')?'shopkeeper':null;
+      const figures={
+        neighbor:'<path d="M10 72q2-19 15-23h11q14 5 15 23z" fill="#c9c0ae" stroke="#211f1b" stroke-width="1.5"/><path d="M15 48q-3-22 9-29 17-8 25 10l-3 18-8-8-17 1z" fill="#38352e" stroke="#211f1b" stroke-width="1.5"/><circle cx="32" cy="33" r="12" fill="#e5dece" stroke="#211f1b" stroke-width="1.5"/><path d="M21 31q9-15 22-4m-20 25 20 19m-7-19-12 19" fill="none" stroke="#211f1b" stroke-width="1"/>',
+        astronomer:'<path d="M9 72q4-20 23-22 18 2 21 22z" fill="#d3cbb9" stroke="#211f1b" stroke-width="1.5"/><path d="M17 40q-5-23 6-30l18 3q11 12 6 30l-8 9-5-12H23z" fill="#38352e" stroke="#211f1b" stroke-width="1.5"/><circle cx="32" cy="34" r="11" fill="#e5dece" stroke="#211f1b" stroke-width="1.5"/><path d="m19 15 13-8 14 10M22 60h20m-15-4v11m8-11v11M20 30l4-2m12 0 5 2" fill="none" stroke="#211f1b" stroke-width="1.2"/><path d="m32 10 2 4 4 .5-3 3 .8 4-3.8-2-3.6 2 .7-4-3-3 4-.5z" fill="#e5dece" stroke="#211f1b" stroke-width=".8"/>',
+        clerk:'<path d="M10 72q2-18 22-21 19 3 21 21z" fill="#c9c0ae" stroke="#211f1b" stroke-width="1.5"/><path d="M18 25h28l-3 11H20z" fill="#38352e" stroke="#211f1b" stroke-width="1.5"/><circle cx="32" cy="37" r="12" fill="#e5dece" stroke="#211f1b" stroke-width="1.5"/><path d="M20 35h10v6H20zm14 0h10v6H34zm-4 3h4m-12 17 10 9 10-9m-10 9v9" fill="none" stroke="#211f1b" stroke-width="1.2"/>',
+        organizer:'<path d="M9 72q3-18 23-21 20 3 23 21z" fill="#c9c0ae" stroke="#211f1b" stroke-width="1.5"/><path d="M17 30q4-17 16-17 15 0 17 17l-5 9-6-10-7 4-12-2z" fill="#38352e" stroke="#211f1b" stroke-width="1.5"/><circle cx="32" cy="37" r="11" fill="#e5dece" stroke="#211f1b" stroke-width="1.5"/><path d="M20 55q12 8 24 0m-12 3v13m-13-5h26" fill="none" stroke="#211f1b" stroke-width="1.2"/>',
+        shopkeeper:'<path d="M9 72q3-18 23-21 20 3 23 21z" fill="#c9c0ae" stroke="#211f1b" stroke-width="1.5"/><path d="M17 29q1-13 15-14 14 1 15 14z" fill="#38352e" stroke="#211f1b" stroke-width="1.5"/><circle cx="32" cy="38" r="11" fill="#e5dece" stroke="#211f1b" stroke-width="1.5"/><path d="M17 54h30l-4 18H21zM25 58v12m14-12v12m-18-32h22" fill="none" stroke="#211f1b" stroke-width="1.2"/>',
+        bartender:'<path d="M8 72q4-19 24-21 20 2 24 21z" fill="#c9c0ae" stroke="#211f1b" stroke-width="1.5"/><path d="M17 29q2-15 15-15 15 1 16 17l-5 8-5-7-18 2z" fill="#38352e" stroke="#211f1b" stroke-width="1.5"/><circle cx="32" cy="37" r="11" fill="#e5dece" stroke="#211f1b" stroke-width="1.5"/><path d="M22 39q10 9 20 0m-17 17 7 12 8-12m-8-1v13" fill="none" stroke="#211f1b" stroke-width="1.2"/>'
+      };
+      if(npcKind){
+        const figure=figures[npcKind]||figures.clerk;
+        return '<svg viewBox="0 0 64 78" aria-hidden="true"><rect x="1" y="1" width="62" height="76" fill="#e7e1d3" stroke="#211f1b"/><path d="M5 67 57 15M4 54 45 13M18 76 61 33M3 40 30 13" stroke="#8c8576" stroke-width=".55" opacity=".65"/>'+figure+'<path d="M4 73h56M7 7h5m40 0h5" stroke="#211f1b" stroke-width=".8"/></svg>';
+      }
+      let object='<path d="M16 14h31v48H16zM21 21h21m-21 6h21m-21 6h17m-17 6h21m-21 6h16" fill="#e5dece" stroke="#211f1b" stroke-width="1.5"/><path d="m10 18 5-4m-5 12 5-4m-5 12 5-4m-5 12 5-4m-5 12 5-4" stroke="#211f1b" stroke-width=".8"/>';
+      if(label.includes('星盘')||label.includes('星图')) object='<circle cx="32" cy="39" r="22" fill="#e5dece" stroke="#211f1b" stroke-width="1.5"/><circle cx="32" cy="39" r="13" fill="none" stroke="#211f1b"/><path d="M32 12v54M5 39h54m-41-19 28 38m0-38L18 58m14-19 12-13" fill="none" stroke="#211f1b" stroke-width="1"/><circle cx="32" cy="39" r="3" fill="#211f1b"/>';
+      else if(label.includes('录音')) object='<rect x="9" y="20" width="46" height="38" rx="2" fill="#d4cbb8" stroke="#211f1b" stroke-width="1.6"/><circle cx="23" cy="39" r="9" fill="none" stroke="#211f1b" stroke-width="1.4"/><circle cx="42" cy="39" r="9" fill="none" stroke="#211f1b" stroke-width="1.4"/><path d="M17 26h30m-30 26h30M29 39h7" stroke="#211f1b" stroke-width="1"/>';
+      else if(label.includes('铃')) object='<path d="M16 47q7-7 8-23 2-14 10-14t10 14q1 16 8 23z" fill="#d4cbb8" stroke="#211f1b" stroke-width="1.6"/><path d="M12 48h40v6H12zm13 10q8 10 16 0m-9-48V5" fill="none" stroke="#211f1b" stroke-width="1.4"/><circle cx="34" cy="52" r="3" fill="#211f1b"/>';
+      else if(label.includes('蛋')||label.includes('鸟')) object='<path d="M20 52q-11-14 1-31 11-16 22-1 11 17-1 32-10 11-22 0z" fill="#e5dece" stroke="#211f1b" stroke-width="1.5"/><path d="m16 57 9-8 7 7 8-10 10 10M27 25l5 5m8-6 3 5" fill="none" stroke="#211f1b" stroke-width="1.2"/>';
+      else if(label.includes('钱')||label.includes('账')||label.includes('回执')) object='<path d="M14 17h35v45H14z" fill="#e5dece" stroke="#211f1b" stroke-width="1.5"/><path d="M20 25h23m-23 8h19m-19 8h23m-23 8h12" stroke="#211f1b" stroke-width="1.2"/><circle cx="42" cy="54" r="7" fill="none" stroke="#211f1b" stroke-width="1.2"/>';
+      return '<svg viewBox="0 0 64 78" aria-hidden="true"><rect x="1" y="1" width="62" height="76" fill="#e7e1d3" stroke="#211f1b"/><path d="M5 67 57 15M4 54 45 13M18 76 61 33" stroke="#8c8576" stroke-width=".55" opacity=".65"/>'+object+'<path d="M4 73h56" stroke="#211f1b" stroke-width=".8"/></svg>';
+    }
+    function itemArtMarkup(name){
+      let drawing='<path d="M5 5h14v17H5zM8 9h8m-8 4h8m-8 4h6" fill="#e5dece" stroke="#211f1b" stroke-width="1.3"/>';
+      if(name.includes('干粮')) drawing='<path d="M3 17q2-9 10-9t10 9v4H3z" fill="#d4cbb8" stroke="#211f1b" stroke-width="1.3"/><path d="M8 11v3m5-4v3m5-2v3" stroke="#211f1b" stroke-width="1"/>';
+      else if(name.includes('水壶')||name.includes('水')) drawing='<path d="M8 5h8v3l2 2v12H6V10l2-2zM10 4h4m-6 9h10" fill="#d4cbb8" stroke="#211f1b" stroke-width="1.3"/>';
+      else if(name.includes('茶')) drawing='<path d="M4 10h13v9H5zM17 12h3q3 0 2 3t-5 2m-11 5h18M8 7q-2-2 0-4m5 4q-2-2 0-4" fill="#e5dece" stroke="#211f1b" stroke-width="1.3"/>';
+      else if(name.includes('咖啡')) drawing='<path d="M5 9h13v11H6zM18 11h3q3 1 1 5h-4m-12 6h17M9 6q-2-2 0-4m5 4q-2-2 0-4" fill="#d4cbb8" stroke="#211f1b" stroke-width="1.3"/>';
+      else if(name.includes('铃')) drawing='<path d="M5 18q4-3 5-9 2-5 5-5t5 5q1 6 4 9zM4 19h20m-10 1q2 4 4 0" fill="#d4cbb8" stroke="#211f1b" stroke-width="1.3"/>';
+      else if(name.includes('录音')) drawing='<rect x="3" y="6" width="21" height="15" rx="1" fill="#d4cbb8" stroke="#211f1b" stroke-width="1.3"/><circle cx="9" cy="13" r="4" fill="none" stroke="#211f1b"/><circle cx="18" cy="13" r="4" fill="none" stroke="#211f1b"/>';
+      else if(name.includes('钥匙')||name.includes('封蜡')) drawing='<circle cx="8" cy="9" r="4" fill="none" stroke="#211f1b" stroke-width="1.5"/><path d="M11 12 22 22m-5-5 3-3m-7 1 3-3" stroke="#211f1b" stroke-width="1.5"/>';
+      else if(name.includes('鸟')||name.includes('碎壳')) drawing='<path d="M5 19 9 8l5 8 4-10 4 13zM7 22h14" fill="#e5dece" stroke="#211f1b" stroke-width="1.3"/>';
+      else if(name.includes('钱')||name.includes('回执')||name.includes('硬币')) drawing='<circle cx="12" cy="13" r="9" fill="#d4cbb8" stroke="#211f1b" stroke-width="1.3"/><path d="M15 9q-5-3-6 1-1 3 5 4 5 2 0 5-3 1-6-1m4-12v16" fill="none" stroke="#211f1b" stroke-width="1"/>';
+      else drawing='<path d="M5 4h14v18H5zM8 8h8m-8 4h8m-8 4h6" fill="#e5dece" stroke="#211f1b" stroke-width="1.3"/>';
+      return '<svg viewBox="0 0 26 26" aria-hidden="true"><path d="M2 23h22M4 21 22 3" stroke="#8c8576" stroke-width=".5"/>'+drawing+'</svg>';
+    }
     function say(message,who){
       const box=$('interaction');
-      box.innerHTML='';
+      box.innerHTML=''; box.classList.add('has-art');
+      const art=document.createElement('div'); art.className='interaction-art'; art.innerHTML=interactionArtMarkup(who);
+      const copy=document.createElement('div'); copy.className='interaction-copy';
       const label=document.createElement('div'); label.className='who'; label.textContent=who||'调查记录';
       const body=document.createElement('p'); body.textContent=message;
-      box.append(label,body);
+      copy.append(label,body); box.append(art,copy);
     }
     function notify(message){
       const el=$('toast'); el.textContent=message; el.classList.add('show');
       clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2300);
+      playSfx('notify');
     }
     function sendPanel(message){
       if(panelReady&&frame.contentWindow) frame.contentWindow.postMessage(message,'*');
@@ -643,16 +766,35 @@
       state.storyCards[id]=true;
       state.consumedCards[id]=false;
       sendPanel({type:'story-grant-card',cardId:id});
+      playSfx('card');
+    }
+    function rememberEnding(cardId,bonuses,source){
+      const entry=endingArchive.find(value=>value.cardId===cardId);
+      const record={cardId,bonuses:Array.isArray(bonuses)?bonuses:[],source:source||null};
+      if(entry) Object.assign(entry,record); else endingArchive.push(record);
+      try{window.localStorage.setItem(endingArchiveKey,JSON.stringify(endingArchive));}catch(error){}
+      syncEndingArchiveStats();
+    }
+    function endingFactionCategory(bonuses){
+      if(!Array.isArray(bonuses)||!bonuses.length) return [];
+      const topScore=Math.max(...bonuses.map(entry=>Number(entry.amount)||0));
+      const top=bonuses.filter(entry=>Number(entry.amount)===topScore).map(entry=>entry.faction);
+      return top.length===1||top.length===2?top:[];
+    }
+    function syncEndingArchiveStats(){
+      state.economyEndingCount=endingArchive.filter(entry=>endingFactionCategory(entry.bonuses).includes('economy')).length;
+      const n=state.economyEndingCount;
+      state.economyTier=n>=10?5:n>=7?4:n>=5?3:n>=3?2:n>=1?1:0;
     }
     function updateCardSync(){
       sendPanel({type:'story-set-gold',gold:state.coins});
       const ownedIds=new Set([
         ...Object.keys(state.storyCards).filter(id=>state.storyCards[id]),
         ...Object.keys(state.purchasedCards).filter(id=>state.purchasedCards[id]),
-        ...Object.keys(state.questionsCrafted).filter(id=>state.questionsCrafted[id]),
-        ...Object.keys(state.endingsCrafted).filter(id=>state.endingsCrafted[id])
+        ...Object.keys(state.questionsCrafted).filter(id=>state.questionsCrafted[id])
       ]);
       ownedIds.forEach(id=>{if(!state.consumedCards[id])sendPanel({type:'story-grant-card',cardId:id});});
+      endingArchive.forEach(entry=>sendPanel({type:'story-grant-ending',cardId:entry.cardId,bonuses:entry.bonuses,source:entry.source}));
     }
     function findSpot(id){
       const keys=Object.keys(places);
@@ -675,6 +817,7 @@
     function passTime(){
       state.period++;
       if(state.period>=periods.length){state.period=0;state.day++;}
+      settleInvestments();
       state.fatigue=cap(state.fatigue+8,0,100);
       state.hunger=cap(state.hunger+6,0,100);
       state.thirst=cap(state.thirst+7,0,100);
@@ -682,6 +825,88 @@
       state.mood=cap(state.mood-(strained?5:1),0,100);
     }
     function cap(value,min,max){return Math.max(min,Math.min(max,value));}
+    let audioContext=null;
+    function playSfx(kind='ui'){
+      try{
+        const AudioCtor=window.AudioContext||window.webkitAudioContext;
+        if(!AudioCtor) return;
+        if(!audioContext) audioContext=new AudioCtor();
+        if(audioContext.state==='suspended') audioContext.resume().catch(()=>{});
+        const now=audioContext.currentTime;
+        const notes=kind==='ending'?[523,659,784]:kind==='card'?[740,988]:kind==='coin'?[660,880]:kind==='loss'?[196,147]:kind==='error'?[220]:kind==='puzzle'?[523,698]:kind==='notify'?[587,784]:kind==='tick'?[440]:[kind==='ui'?480:330];
+        notes.forEach((frequency,index)=>{
+          const osc=audioContext.createOscillator(), gain=audioContext.createGain();
+          osc.type=kind==='loss'?'triangle':'sine'; osc.frequency.value=frequency;
+          gain.gain.setValueAtTime(.0001,now+index*.075);
+          gain.gain.exponentialRampToValueAtTime(kind==='ui'?.018:.045,now+index*.075+.012);
+          gain.gain.exponentialRampToValueAtTime(.0001,now+index*.075+.13);
+          osc.connect(gain); gain.connect(audioContext.destination); osc.start(now+index*.075); osc.stop(now+index*.075+.14);
+        });
+      }catch(error){}
+    }
+    document.addEventListener('click',event=>{const button=event.target.closest('button');if(button&&!button.disabled) playSfx('ui');},true);
+    function settleInvestments(){
+      const held=Object.keys(investmentBusinesses).filter(id=>state.investments[id]>0);
+      if(!held.length) return;
+      const changes=[]; let total=0;
+      held.forEach(id=>{
+        const business=investmentBusinesses[id]; let amount=0;
+        for(let i=0;i<state.investments[id];i++) amount+=business.returns[Math.floor(Math.random()*business.returns.length)];
+        total+=amount;
+        changes.push(business.name+' '+(amount>0?'+':'')+amount+' 金币');
+      });
+      const before=state.coins;
+      state.coins=cap(state.coins+total,0,99);
+      const periodText='第 '+state.day+' 日 '+periods[state.period].name;
+      state.lastInvestmentReport=changes.join('；')+'。';
+      const resultWord=total>0?'分红':total<0?'亏损':'持平';
+      addLog(periodText+'投资结算：'+state.lastInvestmentReport+(state.coins!==before+total?'（金币余额限制生效）':''));
+      notify('投资'+resultWord+'：'+state.lastInvestmentReport);
+      playSfx(total<0?'loss':total>0?'coin':'tick');
+      sendPanel({type:'story-set-gold',gold:state.coins});
+      if($('investment-window').classList.contains('open')) renderInvestmentWindow();
+    }
+    function renderInvestmentSummary(){
+      const block=$('investment-block');
+      const shareCount=state.investments.bar+state.investments.convenience;
+      block.hidden=!(endingArchive.length||state.economyTier>0||shareCount>0);
+      $('investment-summary').textContent='经济结局卡 '+state.economyEndingCount+' / 10 · T'+state.economyTier+(state.economyTier>=5?'（可认购）':'（T5解锁投资）')+'；便利店 '+state.investments.convenience+' 份，酒吧 '+state.investments.bar+' 份；最近结算：'+state.lastInvestmentReport;
+    }
+    function renderInvestmentWindow(){
+      const id=state.activeInvestment||'convenience', business=investmentBusinesses[id];
+      if(!business) return;
+      const shares=state.investments[id]||0;
+      $('investment-business-name').textContent=business.name;
+      $('investment-business-description').textContent=business.description;
+      $('investment-shares').textContent=shares+' / '+business.maxShares;
+      $('investment-share-price').textContent=business.price;
+      $('investment-balance').textContent=state.coins;
+      $('investment-tier-count').textContent=state.economyEndingCount+' / 10（T'+state.economyTier+'）';
+      const locked=state.economyTier<5;
+      const button=$('investment-buy');
+      button.textContent=locked?'需要经济阵营 T5':'认购一份 · '+business.price+' 金币';
+      button.disabled=locked||state.coins<business.price||shares>=business.maxShares;
+      $('investment-status').textContent=locked?'此效果需要 10 张经济阵营结局卡。已归档的结局卡会保留在后续档案中。':shares>=business.maxShares?'该项目已达到持股上限。':state.coins<business.price?'金币不足，无法认购。':'每次认购不消耗时段；收益在下一次周期推进时结算。';
+      $('investment-window-summary').textContent='当前组合：便利店 '+state.investments.convenience+' 份 · 酒吧 '+state.investments.bar+' 份。最近一次：'+state.lastInvestmentReport;
+    }
+    function openInvestment(id){
+      if(!investmentBusinesses[id]) return;
+      state.activeInvestment=id;
+      renderInvestmentWindow();
+      openWindow('investment-window');
+    }
+    function buyInvestment(){
+      const id=state.activeInvestment, business=investmentBusinesses[id];
+      if(!business) return;
+      if(state.economyTier<5){$('investment-status').textContent='经济阵营 T5 尚未解锁。';playSfx('error');return;}
+      if(state.investments[id]>=business.maxShares){$('investment-status').textContent='该项目已达到持股上限。';playSfx('error');return;}
+      if(state.coins<business.price){$('investment-status').textContent='金币不足，无法认购。';playSfx('error');return;}
+      state.coins-=business.price; state.investments[id]++;
+      addLog('投资「'+business.name+'」一份，支出 '+business.price+' 金币。');
+      say('你在「'+business.name+'」的账簿上签下名字，认购一份股份。','投资认购');
+      notify('已认购「'+business.name+'」股份');
+      render(); renderInvestmentWindow(); sendPanel({type:'story-set-gold',gold:state.coins});
+    }
     function changeFaction(faction){
       if(faction) state.faction=faction;
       $('faction').value=state.faction;
@@ -740,9 +965,10 @@
       if(!names.length){box.textContent='空';return;}
       names.forEach(name=>{
         const tag=document.createElement('span'); tag.className='item';
-        tag.textContent=name+' ';
+        const art=document.createElement('span'); art.className='item-art'; art.innerHTML=itemArtMarkup(name); art.setAttribute('aria-hidden','true');
+        const label=document.createElement('span'); label.textContent=name;
         const count=document.createElement('span'); count.className='qty'; count.textContent='×'+state.items[name];
-        tag.appendChild(count); box.appendChild(tag);
+        tag.append(art,label,count); box.appendChild(tag);
       });
     }
     function renderLog(){
@@ -770,7 +996,7 @@
       const district=districts[state.district];
       $('mini-caption').textContent='二级移动 · '+district.name;
       const artName=place.artRef||state.place||district.art;
-      ['archive','crow','hall','observatory'].forEach(name=>{
+      ['archive','crow','hall','observatory','convenience','bar'].forEach(name=>{
         const art=$('art-'+name);
         if(art) art.style.display=name===artName?'':'none';
       });
@@ -798,8 +1024,28 @@
         button.append(glyph,label);
         list.appendChild(button);
       });
-      if(state.pending) renderChoices();
+      if(state.activePuzzle) renderPuzzle(findSpot(state.activePuzzle));
+      else if(state.pending) renderChoices();
       else if(!$('interaction').textContent.trim()) say(state.place?'点击场景标记调查，或从右上角街道图前往城区内的其他地点。部分谜题需要先找到相关物件。':'从右上角街道图选择一个具体地点，开始探索这片城区。','行动提示');
+    }
+    function renderPuzzle(spot){
+      if(!spot||!spot.puzzle) return;
+      const box=$('interaction'); box.innerHTML=''; box.classList.add('has-art');
+      const art=document.createElement('div'); art.className='interaction-art'; art.innerHTML=interactionArtMarkup(spot.who);
+      const copy=document.createElement('div'); copy.className='interaction-copy';
+      const who=document.createElement('div'); who.className='who'; who.textContent='场景谜题 · '+spot.name;
+      const prompt=document.createElement('p'); prompt.textContent=spot.puzzle.question;
+      const options=document.createElement('div'); options.className='choice-list';
+      spot.puzzle.options.forEach((label,index)=>{const button=document.createElement('button');button.className='choice';button.dataset.puzzleAnswer=String(index);button.textContent=label;options.appendChild(button);});
+      const dismiss=document.createElement('button'); dismiss.className='choice'; dismiss.dataset.dismissPuzzle=''; dismiss.textContent='稍后再想';
+      copy.append(who,prompt,options,dismiss); box.append(art,copy);
+    }
+    function answerPuzzle(answer){
+      const spot=findSpot(state.activePuzzle); if(!spot||!spot.puzzle) return;
+      if(Number(answer)!==spot.puzzle.answer){playSfx('error');say('线索还没有对上。'+spot.puzzle.hint,spot.who+' · 谜题提示');setTimeout(()=>{if(state.activePuzzle===spot.id)renderPuzzle(spot);},1200);return;}
+      const id=spot.id; state.puzzleSolved[id]=true; state.activePuzzle=null;
+      addLog('解开「'+spot.name+'」的场景谜题。'); playSfx('puzzle');
+      inspectSpot(id);
     }
     function renderChoices(){
       const pending=state.pending, spot=findSpot(pending);
@@ -807,7 +1053,9 @@
       const revisiting=!!state.done[spot.id];
       const completed=state.dialogueDone[spot.id]||[];
       const remaining=spot.choices.map((choice,index)=>({choice,index})).filter(entry=>!completed.includes(entry.index));
-      const box=$('interaction'); box.innerHTML='';
+      const box=$('interaction'); box.innerHTML=''; box.classList.add('has-art');
+      const art=document.createElement('div'); art.className='interaction-art'; art.innerHTML=interactionArtMarkup(spot.who);
+      const copy=document.createElement('div'); copy.className='interaction-copy';
       const who=document.createElement('div'); who.className='who'; who.textContent=spot.who;
       const intro=document.createElement('p');
       intro.textContent=remaining.length?(revisiting?(spot.repeatText||'你们已经谈过这件事。'):spot.intro):(spot.finishedText||'你们已经把能谈的都谈过了。');
@@ -820,13 +1068,13 @@
         if(locked) button.title='当前倾向为「'+factionNames[state.faction]+'」，需要「'+factionNames[choice.requiresFaction]+'」倾向。';
         options.appendChild(button);
       });
-      box.append(who,intro);
-      if(remaining.length) box.appendChild(options);
+      copy.append(who,intro);
+      if(remaining.length) copy.appendChild(options);
       const dismiss=document.createElement('button'); dismiss.className='choice'; dismiss.dataset.dismissDialog=''; dismiss.textContent='结束交谈';
-      box.appendChild(dismiss);
+      copy.appendChild(dismiss); box.append(art,copy);
     }
     function render(){
-      renderMeters(); renderGoals(); renderInventory(); renderLog(); renderMap(); renderScene();
+      renderMeters(); renderGoals(); renderInventory(); renderInvestmentSummary(); renderLog(); renderMap(); renderScene();
       $('eat').disabled=!getItem('干粮'); $('drink').disabled=!getItem('水壶');
       $('drink-tea').disabled=!getItem('热茶');
       if($('supply-shop-window').classList.contains('open')) renderSupplyShop();
@@ -840,7 +1088,7 @@
         say('你正在'+districts[key].name+'。右上角街道图列出了这片城区的具体地点。','城区总览');
         return;
       }
-      state.district=key; state.place=null; state.pending=null; passTime();
+      state.district=key; state.place=null; state.pending=null; state.activePuzzle=null; passTime();
       addLog('前往'+districts[key].name+'。');
       const firstVisit=!state.visitedDistricts[key];
       state.visitedDistricts[key]=true;
@@ -851,7 +1099,7 @@
       if(!places[key]||places[key].district!==state.district||!isUnlocked(key)) return;
       closeWindows();
       if(state.place===key){say('你已经在这里。把光移到地图标记上，看看还有什么被留下。','场景提示');return;}
-      state.place=key; state.pending=null; passTime();
+      state.place=key; state.pending=null; state.activePuzzle=null; passTime();
       addLog('前往'+places[key].name+'。');
       const firstVisit=!state.visitedPlaces[key];
       state.visitedPlaces[key]=true;
@@ -859,7 +1107,7 @@
       render();
     }
     function closeWindows(){
-      ['world-window','notebook-window','archive-board','supply-shop-window'].forEach(id=>$(id).classList.remove('open'));
+      ['world-window','notebook-window','archive-board','supply-shop-window','investment-window'].forEach(id=>$(id).classList.remove('open'));
       $('window-shade').hidden=true;
       document.querySelectorAll('[data-open-window]').forEach(button=>button.classList.remove('active'));
     }
@@ -876,6 +1124,7 @@
         $('board-kicker').textContent=shopMode?'THE CLUE COUNTER':'THE EVIDENCE BOARD';
         sendPanel({type:shopMode?'truth-show-shop':'truth-show-canvas'});
       }
+      if(id==='investment-window') renderInvestmentWindow();
       target.classList.add('open');
       $('window-shade').hidden=false;
       const trigger=document.querySelector('[data-open-window="'+id+'"]');
@@ -901,6 +1150,7 @@
       if(!spot||spot.chapter>state.chapter) return;
       if(spot.shop==='supplies'){say(spot.text,spot.who);openSupplyShop();return;}
       if(spot.shop==='clues'){openClueShop();return;}
+      if(spot.investment){say(spot.text,spot.who);openInvestment(spot.investment);return;}
       const done=!!state.done[spot.id];
       if(!done&&!unlockedAtPeriod(spot)){
         say(spot.who+'现在不在场。可以先调查别处，等到'+spot.at.map(i=>periods[i].name).join('或')+'再来。','尚未开放');
@@ -919,6 +1169,7 @@
         say('这处调查需要：'+missing.join('、')+'。先在场景里寻找相关物件。','谜题提示');
         return;
       }
+      if(spot.puzzle&&!state.puzzleSolved[spot.id]){state.activePuzzle=spot.id;renderPuzzle(spot);return;}
       if(spot.choices){
         state.pending=spot.id; renderScene(); return;
       }
@@ -985,15 +1236,16 @@
       if(state.coins<good.price){$('supply-status').textContent='金币不足，暂时买不起这件补给。';return;}
       state.coins-=good.price; gainItem(good.item);
       $('supply-status').textContent='已购入「'+good.item+'」，现在可以在随身笔记中使用。';
-      addLog('在鸦钟杂货铺购买 '+good.item+'，花费 '+good.price+' 金币。');
-      say('你把「'+good.item+'」收进随身物品。','鸦钟杂货铺老板');
+      addLog('在鸦钟便利店购买 '+good.item+'，花费 '+good.price+' 金币。');
+      say('你把「'+good.item+'」收进随身物品。','鸦钟便利店老板');
       notify('补给已放入随身物品：'+good.item);
       render(); sendPanel({type:'story-set-gold',gold:state.coins});
     }
-    function onEnding(cardId,name){
+    function onEnding(cardId,name,bonuses,source){
       const act=activeChapter();
       const outcome=endingOutcomes[cardId];
       if(!outcome||!act.endingIds.includes(cardId)||state.finished) return;
+      rememberEnding(cardId,bonuses,source);
       state.endingsCrafted[cardId]=true;
       state.consumedCards[cardId]=false;
       state.routeCards.push({chapter:state.chapter,title:outcome.title});
@@ -1022,10 +1274,10 @@
         say('结局卡「'+name+'」记录了你的结论。'+(routeSummary?'此前两案的结论仍保存在随身笔记中。':''),'最终结局');
         notify('调查完成：'+outcome.title);
       }
-      render(); sendPanel({type:'story-set-gold',gold:state.coins});
+      render(); playSfx('ending'); sendPanel({type:'story-set-gold',gold:state.coins});
     }
     function resetGame(){
-      state=copyState(initialState); $('interaction').innerHTML='';
+      state=copyState(initialState); syncEndingArchiveStats(); $('interaction').innerHTML='';
       $('finale-title').textContent=''; $('finale-text').textContent='';
       frame.src='truth-panel2.html'; panelReady=false;
       addLog('建立新档案。调查从市政档案馆开始。');
@@ -1038,6 +1290,7 @@
       if(event.target.closest('[data-close-window]')||event.target.id==='window-shade'){closeWindows();return;}
       const supplyPurchase=event.target.closest('[data-buy-supply]');
       if(supplyPurchase){buySupply(supplyPurchase.dataset.buySupply);return;}
+      if(event.target.closest('#investment-buy')){buyInvestment();return;}
       const district=event.target.closest('[data-district]');
       if(district){selectDistrict(district.dataset.district);return;}
       const place=event.target.closest('[data-place]');
@@ -1048,6 +1301,9 @@
       if(dismissDialog){state.pending=null;say('你暂时结束了这次交谈。','交谈结束');render();return;}
       const choice=event.target.closest('[data-choice]');
       if(choice){choose(choice.dataset.choice);return;}
+      const puzzleAnswer=event.target.closest('[data-puzzle-answer]');
+      if(puzzleAnswer){answerPuzzle(puzzleAnswer.dataset.puzzleAnswer);return;}
+      if(event.target.closest('[data-dismiss-puzzle]')){state.activePuzzle=null;say('你先把这处线索留在原处，稍后可以回来继续拼合。','调查记录');return;}
     });
     $('faction').addEventListener('change',event=>{state.faction=event.target.value;addLog('选择了「'+factionNames[state.faction]+'」倾向。');renderLog();if(state.pending)renderScene();});
     $('rest').addEventListener('click',rest);
@@ -1056,7 +1312,7 @@
     $('drink-tea').addEventListener('click',drinkTea);
     $('jump-board').addEventListener('click',()=>openWindow('archive-board'));
     $('restart').addEventListener('click',()=>{
-      if(window.confirm('重开档案会清除这次调查进度。确定重来吗？')) resetGame();
+      if(window.confirm('重开档案会清除本轮场景与投资；已归档的结局卡及经济阵营进度会保留。确定重来吗？')) resetGame();
     });
     frame.addEventListener('load',()=>{
       panelReady=true;
@@ -1099,18 +1355,27 @@
       }
       if(event.data.type==='truth-ending-crafted'){
         (event.data.consumedCardIds||[]).forEach(id=>{state.consumedCards[id]=true;});
-        onEnding(event.data.cardId,event.data.name);
+        onEnding(event.data.cardId,event.data.name,event.data.bonuses,event.data.source);
+      }
+      if(event.data.type==='truth-economy-tier'){
+        const previousTier=state.economyTier;
+        state.economyTier=Number(event.data.tier)||0;
+        state.economyEndingCount=Number(event.data.count)||0;
+        render();
+        if(state.economyTier>=5&&previousTier<5){notify('经济阵营 T5 解锁：鸦钟便利店与三刻钟酒吧现可投资');playSfx('ending');}
       }
     });
     window.addEventListener('keydown',event=>{
       if(event.key==='Escape'){
         if(!$('window-shade').hidden){closeWindows();return;}
+        if(state.activePuzzle){state.activePuzzle=null;say('你先把这处线索留在原处，稍后可以回来继续拼合。','调查记录');return;}
         if(state.pending){state.pending=null;say('你暂时没有作答。','对话已收起');render();}
       }
       if(event.key.toLowerCase()==='m') openWindow('world-window');
       if(event.key.toLowerCase()==='i') openWindow('notebook-window');
       if(event.key.toLowerCase()==='j') openWindow('archive-board');
     });
+    syncEndingArchiveStats();
     addLog('建立新档案。调查从市政档案馆开始。');
     say('你醒在一张堆满旧案卷的桌子底下。门外的钟敲了七下，最后一下没有声音。点击场景标记调查，或从右上角街道图前往城区内的地点。','开档');
     render();

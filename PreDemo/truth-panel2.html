@@ -548,6 +548,16 @@
 
     const integratedMode=window.parent!==window;
     if(integratedMode) document.documentElement.classList.add('integrated-mode');
+    let audioContext=null,lastPostedEconomyTier=-1,lastPostedEconomyCount=-1;
+    function playSfx(kind='ui'){
+        try{
+            const AudioCtor=window.AudioContext||window.webkitAudioContext;if(!AudioCtor)return;
+            if(!audioContext)audioContext=new AudioCtor();if(audioContext.state==='suspended')audioContext.resume().catch(()=>{});
+            const now=audioContext.currentTime,notes=kind==='ending'?[523,659,784]:kind==='card'?[740,988]:kind==='coin'?[660,880]:kind==='error'?[220]:[kind==='ui'?480:587];
+            notes.forEach((frequency,index)=>{const osc=audioContext.createOscillator(),gain=audioContext.createGain();osc.type='sine';osc.frequency.value=frequency;gain.gain.setValueAtTime(.0001,now+index*.07);gain.gain.exponentialRampToValueAtTime(kind==='ui'?.014:.035,now+index*.07+.012);gain.gain.exponentialRampToValueAtTime(.0001,now+index*.07+.12);osc.connect(gain);gain.connect(audioContext.destination);osc.start(now+index*.07);osc.stop(now+index*.07+.13);});
+        }catch(error){}
+    }
+    document.addEventListener('click',event=>{const button=event.target.closest('button');if(button&&!button.disabled)playSfx('ui');},true);
     function grantStoryCard(cardId){
         const def=ALL_CARDS[cardId];
         if(!def||state.obtainedCards.has(cardId)) return false;
@@ -557,13 +567,22 @@
         state.hand[bucket].push(cardId);
         renderHand(); renderShop(); updateScoreUI(); updateCardLimitUI();
         showToast('获得卡牌「'+def.displayName+'」','success');
+        playSfx('card');
         return true;
+    }
+    function grantStoryEnding(cardId,bonuses,source){
+        const def=ALL_CARDS[cardId];if(!def||def.type!=='ending'||state.obtainedCards.has(cardId))return false;
+        const valid=(Array.isArray(bonuses)?bonuses:[]).filter(entry=>FACTION_KEYS.includes(entry.faction)&&Number.isFinite(Number(entry.amount))).map(entry=>({faction:entry.faction,amount:Number(entry.amount)}));
+        state.endingBonuses[cardId]=valid;state.endingSources[cardId]=source||null;
+        state.obtainedCards.add(cardId);state.hand.ending.push(cardId);
+        renderHand();renderShop();updateScoreUI();updateCardLimitUI();showToast('归档结局卡「'+def.displayName+'」','success');playSfx('ending');return true;
     }
     window.addEventListener('message',event=>{
         if(event.source!==window.parent||!event.data) return;
         if(event.data.type==='truth-show-shop') document.documentElement.classList.add('shop-only-mode');
         if(event.data.type==='truth-show-canvas') document.documentElement.classList.remove('shop-only-mode');
         if(event.data.type==='story-grant-card') grantStoryCard(event.data.cardId);
+        if(event.data.type==='story-grant-ending') grantStoryEnding(event.data.cardId,event.data.bonuses,event.data.source);
         if(event.data.type==='story-set-gold'){
             state.gold=Math.max(0,Number(event.data.gold)||0);
             updateGoldUI(); renderShop();
@@ -636,10 +655,15 @@
             buffContainer.appendChild(span);
         });
         if(!has)buffContainer.textContent='暂无（集齐对应阵营结局卡解锁）';
+        const economyCount=cnt.economy||0,economyTier=economyCount>=10?5:economyCount>=7?4:economyCount>=5?3:economyCount>=3?2:economyCount>=1?1:0;
+        if(integratedMode&&(economyTier!==lastPostedEconomyTier||economyCount!==lastPostedEconomyCount)){
+            lastPostedEconomyTier=economyTier;lastPostedEconomyCount=economyCount;
+            window.parent.postMessage({type:'truth-economy-tier',tier:economyTier,count:economyCount},'*');
+        }
     }
 
     function getBuffDescription(faction,tier){
-        if(faction==='economy'){const d={1:'每购买5张卡牌，返回1金币',2:'出售卡牌时，额外获得1金币',3:'购买卡牌时，20%概率免费获得一张线索卡',4:'商店解锁赌博玩法（30%胜率）',5:'经济终极羁绊'};return d[tier]||'';}
+        if(faction==='economy'){const d={1:'每购买5张卡牌，返回1金币',2:'出售卡牌时，额外获得1金币',3:'购买卡牌时，20%概率免费获得一张线索卡',4:'商店解锁赌博玩法（30%胜率）',5:'持有10张经济阵营结局卡后，可投资钟楼区的便利店与酒吧。每经过一个时段随机结算分红，也可能亏损。'};return d[tier]||'';}
         const g={1:'阵营羁绊Lv.1',2:'阵营羁绊Lv.2',3:'阵营羁绊Lv.3',4:'阵营羁绊Lv.4',5:'阵营羁绊Lv.5'};return g[tier]||'';
     }
 
@@ -803,7 +827,7 @@
             state.endingBonuses[rule.resultId]=bonusArray;state.endingSources[rule.resultId]={truthId:tid,kqId:kid};
             state.obtainedCards.add(rule.resultId);state.hand.ending.push(rule.resultId);
             showToast(`✅ 获得结局卡「${displayName(rule.resultId)}」`,'success');
-            if(integratedMode) window.parent.postMessage({type:'truth-ending-crafted',cardId:rule.resultId,name:displayName(rule.resultId),consumedCardIds:[tid,kid]},'*');
+            if(integratedMode) window.parent.postMessage({type:'truth-ending-crafted',cardId:rule.resultId,name:displayName(rule.resultId),consumedCardIds:[tid,kid],bonuses:bonusArray,source:{truthId:tid,kqId:kid}},'*');
             state.panelCards=[];renderPanel();renderHand();return;
         }
 
