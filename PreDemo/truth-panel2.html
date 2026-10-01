@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>无名者档案 - 真相画布</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Noto+Serif+SC:wght@400;500;600;700&display=swap');
         :root {
             --bg:#1a1410; --panel-bg:#2a2018; --card-bg:#3a2e22; --border:#5a4a3a;
             --text:#e8dcc0; --text-dim:#a89880; --gold:#c8a870; --gold-dark:#8a7040;
@@ -172,12 +173,16 @@
             --special-color:#817b6d; --danger:#713d36; --success:#4b4840; --coin-color:#4b4840;
         }
         html.integrated-mode,
-        html.integrated-mode body { background:#e7e1d3; color:#211f1b; font-family:Georgia,"Noto Serif SC","Songti SC",serif; }
+        html.integrated-mode body { background:#e7e1d3; color:#211f1b; font-family:"Noto Serif SC",Georgia,"Songti SC",serif; }
         html.integrated-mode *,
         html.integrated-mode button,
         html.integrated-mode input,
         html.integrated-mode select,
-        html.integrated-mode textarea { font-family:Georgia,"Noto Serif SC","Songti SC",serif; }
+        html.integrated-mode textarea { font-family:"Noto Serif SC",Georgia,"Songti SC",serif; }
+        html.integrated-mode .dock-header,
+        html.integrated-mode .board-title,
+        html.integrated-mode .attribute-title,
+        html.integrated-mode .card-name { font-family:"IM Fell English","Noto Serif SC",Georgia,serif; }
         html.integrated-mode #debug-panel,
         html.integrated-mode #clue-shop,
         html.integrated-mode #gamble-area,
@@ -254,15 +259,8 @@
         html.integrated-mode.shop-only-mode,
         html.integrated-mode.shop-only-mode body { min-height:100%; padding:8px; display:block; overflow:auto; }
         html.integrated-mode.shop-only-mode #game-container { width:100%; max-width:none; gap:0; }
-        html.integrated-mode.shop-only-mode #debug-panel,
-        html.integrated-mode.shop-only-mode #attribute-panel,
-        html.integrated-mode.shop-only-mode #button-area,
-        html.integrated-mode.shop-only-mode #board-area { display:none !important; }
-        html.integrated-mode.shop-only-mode #hand-area { display:flex !important; margin-top:10px; }
-        html.integrated-mode.shop-only-mode #hand-area .card-section:not(#section-clue) { display:none !important; }
-        html.integrated-mode.shop-only-mode #section-clue { display:block !important; }
-        html.integrated-mode.shop-only-mode #cards-clue { max-height:180px; overflow:auto; }
-        html.integrated-mode.shop-only-mode #cards-clue .card { width:104px; height:145px; }
+        html.integrated-mode.shop-only-mode #game-container > *:not(#clue-shop):not(#gamble-area) { display:none !important; }
+        html.integrated-mode.shop-only-mode #hand-area { display:none !important; }
         html.integrated-mode.shop-only-mode #clue-shop { display:flex !important; padding:12px; border:1px solid #211f1b; border-radius:0; box-shadow:3px 3px 0 rgba(30,28,24,.14); }
         html.integrated-mode.shop-only-mode #gamble-area:not(.hidden) { display:flex !important; }
         html.integrated-mode.shop-only-mode #toast-container { top:auto; right:8px; bottom:8px; }
@@ -375,10 +373,7 @@
                 <div class="dock-header">⚙️ 执行区 <span id="dock-status">先把卡牌拖到这里</span></div>
                 <div id="dock-slot"><span class="placeholder">把要合成的卡牌拖进这个固定区域<br>然后点击下方任意阵营按钮执行</span></div>
                 <div class="dock-actions">
-                    <button class="dock-faction-btn order" data-dock-faction="order">⚖️ 秩序</button>
-                    <button class="dock-faction-btn economy" data-dock-faction="economy">💰 经济</button>
-                    <button class="dock-faction-btn doubt" data-dock-faction="doubt">🔍 质疑</button>
-                    <button class="dock-faction-btn innovation" data-dock-faction="innovation">💡 创新</button>
+                    <button class="dock-faction-btn doubt" data-dock-faction="doubt">✦ 合成 / 归档</button>
                 </div>
                 <button class="dock-clear" id="dock-clear">清空执行区</button>
             </div>
@@ -415,53 +410,30 @@
     const FACTION_NAMES = { order:'秩序', economy:'经济', doubt:'质疑', innovation:'创新' };
     const FACTION_ICONS = { order:'⚖️', economy:'💰', doubt:'🔍', innovation:'💡' };
 
-    const TRUTH_NAMES = ['谁动了我的脚踏车','无名者的发展','谁是内鬼？','谁举报了无名者？','Anta与母亲的关系是？','神秘男子是谁？','Shangri-la计划是什么？','Shangri-la计划是什么？2','Phoenix Bar为何突然终止营业？','旧城区为何至今存在？','Shangri-la计划的初衷是什么？','谁举报了我？或者说，谁毁了我的人生？','退休案的设立是为了解决什么问题？','母亲为何沉默','为何要公开这一切？','谁来参与直播？','Shangri-la委员会老档案里都有些什么？','等待的人们是谁？','爆炸案的真相是什么？','无名者究竟在做些什么？'];
+    const TRUTH_NAMES = ['谁动了我的脚踏车？','无名者的发展','谁是内鬼','谁举报了无名者？'];
     const truthCards = TRUTH_NAMES.map((name,i)=>({id:`TRUTH_${i}`, type:'truth', name, displayName:name, bonuses:[]}));
     const truthIdByName = {}; truthCards.forEach(c=>truthIdByName[c.name]=c.id);
 
     const CLUES_DATA = [
         ['被破坏的院子',[]], ['争吵',[]], ['碎掉的鸟蛋',[['innovation',1]]], ['联手罢工',[]], ['线下活动',[['innovation',1]]],
-        ['学术研讨会',[['order',1]]], ['狂欢派对！',[['doubt',1]]], ['看星盘',[]], ['情绪化',[]], ['书记员',[['order',1]]],
-        ['录音机',[['order',1]]], ['蹲守地库',[['order',1]]], ['不理解无名者',[['innovation',1]]], ['公开地址',[['innovation',1]]],
-        ['器官移植',[['doubt',1]]], ['研究课题',[['economy',1]]], ['缺席会议',[['economy',1]]], ['意外之财',[['economy',1]]],
+        ['学术探讨会',[['order',1]]], ['狂欢派对！',[['doubt',1]]], ['看星盘',[]], ['情绪化',[]], ['书记员',[['order',1]]],
+        ['录音机',[['order',1]]], ['蹲守地库',[['order',1]]], ['公开地址',[['innovation',1]]], ['不理解无名者',[['innovation',1]]],
+        ['器官移植',[['doubt',1]]], ['缺席会议',[['economy',1]]], ['研究课题',[['economy',1]]], ['意外之财',[['economy',1]]],
         ['免费咖啡',[]], ['过节',[]], ['保守党领袖',[['order',1]]], ['首相竞选',[['order',1]]], ['言论攻击1',[['order',1]]],
         ['言论攻击2',[['order',1]]], ['言论攻击3',[['order',1]]], ['创新党领袖',[['innovation',1]]], ['恨铁不成钢',[['innovation',1]]],
-        ['采访',[['innovation',1]]], ['童年回忆',[['innovation',1]]], ['退租',[['economy',1]]], ['邪教组织',[['economy',1]]], ['邋遢',[]],
-        ['前成员',[['doubt',1]]], ['胡闹',[['doubt',1]]], ['走私物',[['doubt',1]]], ['政见不一',[['order',1]]], ['合影',[['innovation',1]]],
-        ['爱而不得',[['doubt',1]]], ['眼熟',[]], ['艺术感穿搭',[]], ['辨识度低',[]], ['熟络',[]],
-        ['《园丁协议》',[]], ['《晚间和谐法案》',[['order',1]]], ['竞选语录',[['order',1]]], ['实现基础收入',[['economy',1]]],
-        ['《不工作权》',[['economy',1]]], ['死亡率数据',[]], ['《昨日重现》',[]], ['北境地图',[]], ['《卢门文明》',[]],
-        ['星期二法则',[]], ['《冷战遗产继承公证处》',[['doubt',1]]], ['冷战尚未结束',[['doubt',1]]],
-        ['《第二次人口普查》',[['innovation',1]]], ['《人类说明书》',[['innovation',1]]], ['《天气预报人》',[['innovation',1]]],
-        ['高方差个体',[['innovation',1]]], ['《请让我走》',[]], ['酒吧合影',[]], ['心怀鬼胎',[]], ['亚文化',[['innovation',1]]],
-        ['无所事事',[['doubt',1]]], ['破产',[['economy',1]]], ['天文爱好者',[['innovation',1]]], ['全民饮酒',[['order',1]]],
-        ['公共场合可饮酒',[['order',1]]], ['健康原因',[['doubt',1]]], ['酒神不喜欢清醒的人',[['doubt',1]]], ['规划失败',[['order',1]]],
-        ['资金问题',[['economy',1]]], ['老城区',[['innovation',1]]], ['财报藏匿点',[['doubt',1]]], ['守墓人',[['doubt',1]]], ['医疗技术',[]],
-        ['《连续性协议》',[]], ['《恒定值》',[['innovation',1]]], ['《自发秩序》',[['innovation',1]]], ['乌托邦幻想',[['economy',1]]],
-        ['语录1',[]], ['语录2',[]], ['优化方案',[['order',1]]], ['机器化运行',[['order',1]]], ['落魄的年轻人',[['doubt',1]]],
-        ['无所事事',[]], ['无名者',[]], ['困境',[]], ['冷漠',[]], ['原生家庭',[]], ['长寿计划',[]],
-        ['失权',[]], ['老人不退场',[['doubt',1]]], ['资产没有自然重新分配',[['doubt',1]]], ['"人生窗口"被压缩',[['doubt',1]]],
-        ['父母掌权',[['doubt',1]]], ['代沟',[['doubt',1]]], ['生育率下降',[['doubt',1]]], ['终身工作',[['doubt',1]]], ['死亡即解放',[['doubt',1]]],
-        ['不再创新',[['doubt',1]]], ['母亲卸任',[]], ['疲倦',[]], ['修正错误',[['doubt',1]]], ['举报无名者',[['order',1]]], ['亏欠',[]],
-        ['推行退休案',[['economy',1]]], ['无名者是正确的',[['doubt',1]]], ['无名者无罪',[['doubt',1]]], ['退休法案必须推行',[['economy',1]]],
-        ['夺回话语权',[['economy',1]]], ['等待的学者',[['innovation',1]]], ['希望破灭者',[['economy',1]]], ['一辈子的书记员',[['order',1]]],
-        ['懵懂的青少年',[['economy',1]]], ['伙伴',[['doubt',1]]], ['组织者',[['doubt',1]]], ['普通人',[]], ['阴谋论者',[['doubt',1]]],
-        ['消除衰老',[['innovation',1]]], ['医学技术',[['innovation',1]]], ['预测',[['doubt',1]]], ['社会模型',[['doubt',1]]], ['自由市场',[['economy',1]]],
-        ['异化',[['economy',1]]], ['经验主义',[['order',1]]], ['不该离开',[['order',1]]], ['资源浪费',[]], ['法律开始拥有记忆',[['doubt',1]]],
-        ['谁有资格定义未来？',[['doubt',1]]], ['什么时候才算治好了？',[['doubt',1]]], ['长期性犯罪',[['doubt',1]]], ['望不到头',[['doubt',1]]],
-        ['年久失修',[]], ['维修部门上报',[]], ['财政拒绝拨款',[]], ['偷工减料',[]], ['无风险预警',[]],
-        ['无立案处理',[]], ['为何需要不确定性',[]], ['反对固化的社会身份',[]], ['反对没有选择的"长寿"',[]],
-        ['反对被预测的人生',[]], ['为什么会被称为"恐怖组织"',[]], ['拒绝口号',[]]
+        ['采访',[['innovation',1]]], ['童年回忆',[['innovation',2]]], ['退租',[['economy',1]]], ['邪教组织',[['economy',2]]], ['邋遢',[]],
+        ['前成员',[['doubt',1]]], ['胡闹',[['doubt',1]]], ['走私物',[['doubt',1]]], 
     ];
-    const clueCards = CLUES_DATA.map((data,i)=>{const bonuses=data[1].map(([f,a])=>({faction:f,amount:a}));return{id:`CLUE_${i}`,type:'clue',name:data[0],displayName:data[0],bonuses};});
+    const CLUE_DESCRIPTIONS = ["\u9e1f\u86cb\u88ab\u4f60\u7838\u788e\u5728\u5979\u5bb6\u9662\u5b50\u91cc\uff0c\u5979\u56e0\u6b64\u5bf9\u4f60\u6000\u6068\u5728\u5fc3","\u56e0\u7ec4\u7ec7\u53d1\u5c55\u95ee\u9898\u4e0e\u4f60\u53d1\u751f\u4e89\u5435\uff0c\u5bf9\u4f60\u5fc3\u5b58\u4e0d\u6ee1","\u4f60\u638f\u4e86\u5b83\u7684\u7a9d\uff0c\u5b83\u53ef\u80fd\u8fdb\u884c\u62a5\u590d","\u4f60\u4eec\u66fe\u7ecf\u5728\u7f51\u4e0a\u53d1\u8d77\u8fc7\u8ba9\u5927\u5bb6\u8054\u624b\u7f62\u5de5\uff0c\u867d\u7136\u5e74\u8f7b\u4eba\u6839\u672c\u6ca1\u6709\u5de5\u4f5c\u673a\u4f1a\uff0c\u66f4\u4f55\u51b5\uff0c\u5728\u804c\u7684\u8001\u5e74\u4eba\u4e5f\u5e76\u4e0d\u6d4f\u89c8\u4f60\u4eec\u7684\u8bba\u575b\u3002","\u4f60\u4eec\u66fe\u7ecf\u591a\u6b21\u7ec4\u7ec7\u7ebf\u4e0b\u6d3b\u52a8\uff0c\u53d1\u4f20\u5355\uff0c\u8d34\u6d77\u62a5\uff0c\u5e0c\u671b\u80fd\u591f\u8ba9\u5e74\u8f7b\u4eba\u96c6\u4f53\u593a\u56de\u8bdd\u8bed\u6743\u3002","\u4f60\u4eec\u66fe\u7ecf\u5728\u4e0d\u540c\u7684\u5730\u65b9\u4e3e\u529e\u8fc7\u5f88\u591a\u5b66\u672f\u63a2\u8ba8\u4f1a\uff0c\u4e5f\u5438\u5f15\u4e86\u4e0d\u5c11\u7ec4\u7ec7\u5916\u7684\u4eba\uff0c\u4f46\u662f\u5f88\u5c11\u6709\u4eba\u613f\u610f\u771f\u6b63\u52a0\u5165\u65e0\u540d\u8005\uff0c\u56e0\u4e3a\u5927\u5bb6\u4e0d\u76f8\u4fe1\u4f60\u4eec\u80fd\u6539\u53d8\u4e16\u754c\u3002","\u4f60\u4eec\u6bcf\u5468\u7684\u805a\u4f1a\u5176\u5b9e\u5c31\u662f\u5728\u4e00\u8d77\u559d\u9152\u5403\u62ab\u8428\u3002","\u4ed6\u8ba4\u4e3a\u4e00\u5b9a\u662f\u5916\u661f\u4eba\u8d50\u4e88\u4e86\u9ad8\u5c42\u957f\u5bff\u3002\u6bcf\u6b21\u90fd\u95ee\u4f60\u8981\u4e0d\u8981\u770b\u4e2a\u661f\u76d8\uff1f\u6536\u8d39500\u3002","\u4ed6\u603b\u662f\u663c\u4f0f\u591c\u51fa\uff0c\u4e14\u6bcf\u6b21\u90fd\u795e\u795e\u53e8\u53e8\u7684\uff0c\u60c5\u7eea\u5f88\u4e0d\u7a33\u5b9a\u7684\u6837\u5b50\u3002\u6709\u4e00\u6b21\u4ed6\u81ea\u8a00\u81ea\u8bed\u5730\u6765\u53c2\u4e0e\u4f1a\u8bae\uff0c\u5dee\u70b9\u649e\u67f1\u5b50\u4e0a","\u5979\u5e72\u4e86\u4e00\u8f88\u5b50\u4e66\u8bb0\u5458\uff0c\u6253\u5b57\u90fd\u5feb\u6253\u4e0d\u660e\u767d\u4e86\u8fd8\u5728\u5f53\u4e66\u8bb0\u5458\u3002\u5979\u603b\u662f\u70ab\u8000\u8bf4\u81ea\u5df1\u5f88\u5feb\u5c31\u80fd\u5f53\u4e0a\u6cd5\u5b98\u4e86\uff0c\u7136\u800c\u5374\u603b\u662f\u4e8b\u4e0e\u613f\u8fdd\u3002","\u67d0\u6b21\u4f1a\u8bae\u7ed3\u675f\u4e4b\u540e\uff0c\u4f60\u7559\u610f\u5230\u5979\u6b63\u5728\u6446\u5f04\u4e00\u4e2a\u5f55\u97f3\u673a\uff0c\u5e76\u4e14\u5077\u5077\u85cf\u4e86\u8d77\u6765\u3002","\u901a\u8fc7\u76d1\u63a7\uff0c\u597d\u53cb\u53d1\u73b0\uff0c\u6709\u4e2a\u8eab\u5f71\u6bcf\u5468\u90fd\u4f1a\u9b3c\u9b3c\u795f\u795f\u5730\u8e72\u5728\u5730\u5e93\u524d\uff0c\u5e76\u4e14\u4e0d\u65ad\u8e31\u6b65\u5f98\u5f8a\uff0c\u884c\u4e3a\u4e3e\u6b62\u76f8\u5f53\u53ef\u7591\u3002\u539f\u6765\uff0c\u6b64\u4eba\u5c31\u662f\u5019\u8865\u6cd5\u5b98\u3002","\u516c\u5f00\u5730\u5740\u4e4b\u524d\u76f4\u64ad\u7684\u65f6\u5019\uff0c\u4ed6\u5c06\u65e0\u540d\u8005\u7684\u7ebf\u4e0b\u4f1a\u9762\u5730\u5740\u76f4\u63a5\u6253\u5728\u76f4\u64ad\u95f4\u91cc\u62db\u65b0\u3002","\u8fd9\u4e2a\u5e74\u7eaa\u8f7b\u8f7b\u5c31\u6709\u767e\u4e07\u7c89\u4e1d\u7684\u6e38\u620f\u4e3b\u64ad\u603b\u662f\u5728\u4f60\u4eec\u5f00\u4f1a\u7684\u65f6\u5019\u4e0d\u505c\u5730\u63d0\u95ee\uff0c\u201c\u4e3a\u4ec0\u4e48\u4f60\u4eec\u8981\u505a\u8fd9\u4e9b\uff1f\u4e3a\u4ec0\u4e48\u4f60\u4eec\u8981\u505a\u90a3\u4e9b\uff1f\u201d","\u8ba4\u4e3a\u9ad8\u5c42\u4e00\u5b9a\u5728\u79fb\u690d\u5668\u5b98\uff0c\u6240\u8c13\u7684\u533b\u7597\u6280\u672f\u5176\u5b9e\u6839\u672c\u6ca1\u6709\u5b9e\u73b0\uff0c\u53ea\u662f\u727a\u7272\u5e95\u5c42\u4eba\u6c11\u6027\u547d\u6362\u53d6\u957f\u5bff\u7684\u8c0e\u8a00\u7f62\u4e86\u3002","\u503c\u5f97\u4e00\u63d0\u7684\u662f\uff0c\u4ece\u672a\u7f3a\u5e2d\u8fc7\u8ba8\u8bba\u4f1a\u7684\u4ed6\uff0c\u524d\u4e24\u5468\u90fd\u7f3a\u5e2d\u4e86\u3002","\u4ed6\u662f\u4e2a\u5931\u4e1a\u7684\u535a\u58eb\uff0c\u6b63\u5728\u7814\u7a76\u201c\u5931\u4e1a\u7ecf\u6d4e\u5bf9\u54f2\u5b66\u53d1\u5c55\u7684\u5f71\u54cd\u201d\u3002\u76ee\u524d\uff0c\u4ed6\u6b63\u5728\u7b49\u5f85\u81ea\u5df1\u7684\u7814\u7a76\u8bfe\u9898\u88ab\u901a\u8fc7\u3002","\u901a\u8fc7\u8c03\u67e5\uff0c\u4f60\u4eec\u53d1\u73b0\u8fd9\u4f4d\u5931\u4e1a\u54f2\u5b66\u535a\u58eb\u7684\u94f6\u884c\u5361\u4e0a\u7a81\u7136\u591a\u4e86\u4e00\u7b14\u5de8\u6b3e\uff0c\u800c\u4e14\u65f6\u95f4\u6b63\u597d\u662f\u7206\u70b8\u6848\u524d\u4e00\u5929\u3002","\u4ed6\u6765\u8fd9\u91cc\u662f\u56e0\u4e3a\u6bcf\u5929\u90fd\u80fd\u559d\u514d\u8d39\u5496\u5561","\u4e5f\u8bb8\uff0c\u6700\u4e00\u5f00\u59cb\uff0c\u5c31\u662f\u597d\u53cb\u4e3e\u62a5\u4e86\u4f60\u5462\uff1f","\u8eab\u4e3a\u4fdd\u5b88\u515a\u9886\u8896\u7684Anta\uff0c\u4e00\u76f4\u4ee5\u6765\u90fd\u662f\u4f60\u6bcd\u4eb2\u6700\u5927\u7684\u653f\u654c\u3002","\u4e0b\u4e2a\u6708\u5c31\u662f\u5168\u6c11\u516c\u5f00\u9996\u76f8\u5927\u9009\u4e86\uff0c\u4f60\u6bcd\u4eb2\u51fa\u5c40\u540eAnta\u5c31\u662f\u6700\u5927\u7684\u8d62\u5bb6\u3002","\u4f60\u6bcd\u4eb2\u4f5c\u4e3a\u521b\u65b0\u515a\u9886\u8896\u7eb5\u5bb9\u81ea\u5df1\u5973\u513f\u7684\u6050\u6016\u7ec4\u7ec7\u201c\u65e0\u540d\u8005\u201d\u3002","\u521b\u65b0\u515a\u5185\u90e8\u7ec4\u7ec7\u67b6\u6784\u8150\u8d25\uff0c\u4e0d\u5c11\u4eba\u5f87\u79c1\u6789\u6cd5\u3002","\u521b\u65b0\u515a\u8054\u7cfb\u5916\u661f\u4eba\uff0c\u60f3\u8981\u6bc1\u706d\u5730\u7403\u6587\u660e\u3002","\u65e0\u540d\u8005\u7684\u5b58\u5728\u4f1a\u4ee4\u521b\u65b0\u515a\u5907\u53d7\u975e\u8bae\u3002","\u4f60\u6bcd\u4eb2\u4ece\u672a\u5bf9\u4f60\u62b1\u6709\u4efb\u4f55\u671f\u671b\uff0c\u5979\u5174\u8bb8\u662f\u6700\u65e9\u4e3e\u62a5\u4f60\u7684\u4eba\u3002","\u8bb0\u8005\u5411\u4f60\u6bcd\u4eb2\u63d0\u95ee\uff1a\u60a8\u76f8\u4fe1\u81ea\u5df1\u7684\u5973\u513f\u5417\uff1f\u4f60\u6bcd\u4eb2\u56de\u7b54\uff1a\u6cd5\u5f8b\u4f1a\u7ed9\u51fa\u7b54\u6848\u3002","\u5979\u6c38\u8fdc\u5728\u7535\u89c6\u4e0a\uff0c\u4ece\u4e0d\u5728\u5bb6\u91cc\u3002\u5979\u8bb0\u5f97\u56fd\u5bb6\u9884\u7b97\u5374\u4e0d\u8bb0\u5f97\u4f60\u7684\u751f\u65e5\uff0c\u5979\u8bb0\u5f97\u8bae\u4f1a\u6295\u7968\u65f6\u95f4\u5374\u4e0d\u8bb0\u5f97\u4f60\u7684\u6bd5\u4e1a\u5178\u793c\u3002","\u4f60\u4eec\u66fe\u7ecf\u79df\u8fc7\u4e00\u4e2a\u5de5\u4f5c\u5ba4\uff0c\u573a\u5730\u975e\u5e38\u5927\u4f46\u662f\u4e5f\u5f88\u8d35\uff0c\u540e\u6765\u7531\u4e8e\u8d44\u91d1\u6709\u9650\u88ab\u8feb\u9009\u4e86\u73b0\u5728\u7684\u5730\u5740\u3002","\u5de5\u4f5c\u5ba4\u7684\u79df\u671f\u4e00\u5230\u524d\u623f\u4e1c\u5c31\u8feb\u4e0d\u53ca\u5f85\u5730\u60f3\u8981\u5c06\u4f60\u4eec\u8d76\u8d70\uff0c\u4ed6\u975e\u5e38\u540e\u6094\u79df\u7ed9\u4f60\u4eec\uff0c\u89c9\u5f97\u201c\u65e0\u540d\u8005\u201d\u5c31\u662f\u4e2a\u90aa\u6559\u7ec4\u7ec7\u3002","\u4ed6\u6bcf\u6b21\u90fd\u9a82\u9a82\u54a7\u54a7\u5730\u6765\u6253\u626b\u536b\u751f\uff0c\u8bf4\u4f60\u4eec\u5b9e\u5728\u662f\u592a\u908b\u9062\u4e86\uff0c\u70df\u5934\u5564\u9152\u74f6\u4e71\u4e22\u3002","\u8239\u957f\u66fe\u662f\u201c\u65e0\u540d\u8005\u201d\u7684\u4e00\u5458\u3002","\u4ed6\u53d1\u73b0\u8bf4\u597d\u7684\u6bcf\u5468\u8f6e\u6d41\u8d1f\u8d23\u7ed3\u679c\u53ea\u6709\u4ed6\u81ea\u5df1\u5728\u8ba4\u771f\uff0c\u4e8e\u662f\u4ed6\u4fbf\u9000\u51fa\u201c\u65e0\u540d\u8005\u201d\uff0c\u4ed6\u8bf4\u81ea\u5df1\u771f\u7684\u9700\u8981\u53bb\u8d5a\u94b1\u4e0d\u80fd\u80e1\u95f9\u4e86\u3002","\u4f60\u4eec\u5728\u4ed6\u7684\u8239\u4e0a\u53d1\u73b0\u4e86\u5927\u91cf\u7684\u8d70\u79c1\u7269\uff0c\u8fd9\u5c31\u662f\u4ed6\u7684\u8c0b\u751f\u624b\u6bb5\u3002"];
+    const clueCards = CLUES_DATA.map(([name,bonuses],i)=>({id:`CLUE_${i}`,type:'clue',name,displayName:name,bonuses:bonuses.map(([faction,amount])=>({faction,amount})),description:CLUE_DESCRIPTIONS[i]||''}));
     const clueIdByName = {}; clueCards.forEach(c=>clueIdByName[c.name]=c.id);
 
-    const KQ_NAMES = ['邻居','好友','鸟','成为一个反抗资本主义的组织','成为一个反抗社会结构化的组织','成为一个学术研讨的组织','专注自我为所欲为','37岁职业占星师','59岁候补法官','13岁游戏主播','阴谋论博客主持人','42岁失业哲学博士','牙医','好友','Anta','母亲','前房东','保洁员','船长','宿敌','朋友','情人','故交','酒吧老板','路人','旧情人','种族灭绝','推广全民饮酒','组织年轻人步入社会','突破人类寿命极限','寻找秘境Shangri-la','外星人入侵计划','冷战遗留问题','AI数据革命','器官移植名单出现异常','饮酒俱乐部','自命不凡者','亚文化拥护行动','Losers','资金短缺','追逐梦想','全民饮酒计划所致','无法适应长寿社会','历史遗物','预算不足','出于情怀被保留','此地无银三百两','实现全人类延寿','政治技术','经济发展','自欺欺人','恐惧死亡','重构社会制度','泄愤','我自己','母亲','Shangri-la委员会','社会','权力固化','财富冻结','年轻人激进化','家庭结构崩塌','价值观冲突','人口比例失衡','就业市场停滞','死亡特权','社会停止发展','第一个主动退休者','一代人的忏悔','无言以对','一意孤行','承认错误','为无名者脱罪','公开Shangri-la计划','重建社会秩序','哲学博士','占星师','候补法官','游戏主播','好友','我','牙医','博客主持人','医疗水平提升','量化社会','自由经济','连续性','对过去社会的不满','创业者','律师','教师','医生','警察','年迈的人','政务无作为','施工问题','媒体无作为','警方无作为','反对确定性','身份自由','拥有选择权','不可预测性','拒绝被命名','漫无目的'];
+    const KQ_NAMES = ['邻居','好友','鸟','成为一个反抗资本主义的组织','成为一个反抗社会结构化的组织','成为一个学术研讨组织','专注自我，为所欲为','37岁职业占星师','59岁候补法官','13岁游戏主播','阴谋论博客主持人','42岁失业哲学博士','牙医','好友','Anta','母亲','前房东','保洁员','船长'];
     const KQ_RULE_DATA = [
-        {truth:'谁动了我的脚踏车',clues:['被破坏的院子']},{truth:'谁动了我的脚踏车',clues:['争吵']},{truth:'谁动了我的脚踏车',clues:['碎掉的鸟蛋']},
-        {truth:'无名者的发展',clues:['联手罢工']},{truth:'无名者的发展',clues:['线下活动']},{truth:'无名者的发展',clues:['学术研讨会']},{truth:'无名者的发展',clues:['狂欢派对！']},
-        {truth:'谁是内鬼？',clues:['看星盘','情绪化']},{truth:'谁是内鬼？',clues:['书记员','录音机','蹲守地库']},{truth:'谁是内鬼？',clues:['不理解无名者','公开地址']},
-        {truth:'谁是内鬼？',clues:['器官移植']},{truth:'谁是内鬼？',clues:['研究课题','缺席会议','意外之财']},{truth:'谁是内鬼？',clues:['免费咖啡']},{truth:'谁是内鬼？',clues:['过节']},
+        {truth:'谁动了我的脚踏车？',clues:['被破坏的院子']},{truth:'谁动了我的脚踏车？',clues:['争吵']},{truth:'谁动了我的脚踏车？',clues:['碎掉的鸟蛋']},
+        {truth:'无名者的发展',clues:['联手罢工']},{truth:'无名者的发展',clues:['线下活动']},{truth:'无名者的发展',clues:['学术探讨会']},{truth:'无名者的发展',clues:['狂欢派对！']},
+        {truth:'谁是内鬼',clues:['看星盘','情绪化']},{truth:'谁是内鬼',clues:['书记员','录音机','蹲守地库']},{truth:'谁是内鬼',clues:['公开地址','不理解无名者']},
+        {truth:'谁是内鬼',clues:['器官移植']},{truth:'谁是内鬼',clues:['缺席会议','研究课题','意外之财']},{truth:'谁是内鬼',clues:['免费咖啡']},{truth:'谁是内鬼',clues:['过节']},
         {truth:'谁举报了无名者？',clues:['保守党领袖','首相竞选','言论攻击1','言论攻击2','言论攻击3']},{truth:'谁举报了无名者？',clues:['创新党领袖','恨铁不成钢','采访','童年回忆']},
         {truth:'谁举报了无名者？',clues:['退租','邪教组织']},{truth:'谁举报了无名者？',clues:['邋遢']},{truth:'谁举报了无名者？',clues:['前成员','胡闹','走私物']},
         {truth:'Anta与母亲的关系是？',clues:['政见不一']},{truth:'Anta与母亲的关系是？',clues:['合影']},{truth:'Anta与母亲的关系是？',clues:['爱而不得']},
@@ -495,15 +467,8 @@
     ];
 
     const kqCards = KQ_NAMES.map((name,i)=>{const rule=KQ_RULE_DATA[i];const bonuses=[];if(rule&&rule.clues){for(const cn of rule.clues){const cid=clueIdByName[cn];if(cid){const cd=clueCards.find(c=>c.id===cid);if(cd&&cd.bonuses){for(const b of cd.bonuses){const ex=bonuses.find(x=>x.faction===b.faction);if(ex)ex.amount+=b.amount;else bonuses.push({faction:b.faction,amount:b.amount});}}}}}return{id:`KQ_${i}`,type:'key-question',name,displayName:name,bonuses};});
-    const endingCards = KQ_NAMES.map((name,i)=>({id:`END_${i}`,type:'ending',name,displayName:name,bonuses:[]}));
-    const storyCardNames = {
-        KQ_0:'隔壁太太', END_0:'车铃指向东边',
-        KQ_3:'无名者的集会', END_3:'名字属于所有人',
-        KQ_7:'三十七岁的占星师', END_7:'命运不是星盘写的'
-    };
-    kqCards.concat(endingCards).forEach(card=>{
-        if(storyCardNames[card.id]) card.displayName=storyCardNames[card.id];
-    });
+    const endingCards = KQ_NAMES.map((name,i)=>({id:`END_${i}`,type:'ending',name,displayName:name,bonuses:[...(kqCards[i]?.bonuses||[])]}));
+    endingCards.push({id:'END_TRUTH_1',type:'ending',name:'无名者的发展',displayName:'无名者的发展 · 阶段结局',bonuses:[],chapterTruthId:'TRUTH_1'});
     const specialCards = [{id:'SPECIAL_REWIND',type:'special-effect',name:'回溯',displayName:'回溯',bonuses:[]}];
     const keyQuestionRules = kqCards.map((kq,i)=>{const d=KQ_RULE_DATA[i];if(!d)return null;return{resultId:kq.id,truthId:truthIdByName[d.truth],clueIds:d.clues.map(n=>clueIdByName[n])};}).filter(Boolean);
     const endingRules = endingCards.map((end,i)=>({resultId:end.id,keyqId:kqCards[i]?.id||null,truthId:truthIdByName[KQ_RULE_DATA[i]?.truth]||null,costAmount:1})).filter(r=>r.keyqId&&r.truthId);
@@ -517,7 +482,7 @@
         obtainedCards:new Set(),
         hand:{truth:[],'key-question':[],clue:[],ending:[],'special-effect':[]},
         endingBonuses:{}, endingSources:{},
-        gameEnded:false, activeButton:null, panelCards:[],
+        gameEnded:false, activeButton:'doubt', panelCards:[],
         shopCollapsed:false, shopPage:0, shopPageSize:20,
         cardLimitBase:20, cardLimitPer10:10, initialTotalScores:12,
         purchaseCount:0,
@@ -554,7 +519,7 @@
             const AudioCtor=window.AudioContext||window.webkitAudioContext;if(!AudioCtor)return;
             if(!audioContext)audioContext=new AudioCtor();if(audioContext.state==='suspended')audioContext.resume().catch(()=>{});
             const now=audioContext.currentTime,notes=kind==='ending'?[523,659,784]:kind==='card'?[740,988]:kind==='coin'?[660,880]:kind==='error'?[220]:[kind==='ui'?480:587];
-            notes.forEach((frequency,index)=>{const osc=audioContext.createOscillator(),gain=audioContext.createGain();osc.type='sine';osc.frequency.value=frequency;gain.gain.setValueAtTime(.0001,now+index*.07);gain.gain.exponentialRampToValueAtTime(kind==='ui'?.014:.035,now+index*.07+.012);gain.gain.exponentialRampToValueAtTime(.0001,now+index*.07+.12);osc.connect(gain);gain.connect(audioContext.destination);osc.start(now+index*.07);osc.stop(now+index*.07+.13);});
+            notes.forEach((frequency,index)=>{const osc=audioContext.createOscillator(),gain=audioContext.createGain();osc.type='sine';osc.frequency.value=frequency;gain.gain.setValueAtTime(.0001,now+index*.07);gain.gain.exponentialRampToValueAtTime((kind==='ui'?.014:.035)*Math.pow(10,2/20),now+index*.07+.012);gain.gain.exponentialRampToValueAtTime(.0001,now+index*.07+.12);osc.connect(gain);gain.connect(audioContext.destination);osc.start(now+index*.07);osc.stop(now+index*.07+.13);});
         }catch(error){}
     }
     document.addEventListener('click',event=>{const button=event.target.closest('button');if(button&&!button.disabled)playSfx('ui');},true);
@@ -577,17 +542,37 @@
         state.obtainedCards.add(cardId);state.hand.ending.push(cardId);
         renderHand();renderShop();updateScoreUI();updateCardLimitUI();showToast('归档结局卡「'+def.displayName+'」','success');playSfx('ending');return true;
     }
+    function setIntegratedPanelMode(mode){
+        const root=$('#game-container');if(!integratedMode||!root)return;
+        const shopOnly=mode==='shop';
+        document.documentElement.classList.toggle('shop-only-mode',shopOnly);
+        [...root.children].forEach(node=>{
+            node.style.removeProperty('display');
+            if(shopOnly&&node.id!=='clue-shop')node.style.setProperty('display','none','important');
+        });
+        if(shopOnly){const shop=$('#clue-shop');if(shop)shop.style.setProperty('display','flex','important');}
+    }
+    function removeStoryCard(cardId){
+        if(!cardId)return;
+        state.obtainedCards.delete(cardId);
+        Object.keys(state.hand).forEach(bucket=>{state.hand[bucket]=state.hand[bucket].filter(id=>id!==cardId);});
+        state.panelCards=state.panelCards.filter(id=>id!==cardId);
+        delete boardPositions[cardId];delete state.endingBonuses[cardId];delete state.endingSources[cardId];
+        renderPanel();renderHand();renderBoard();renderShop();updateScoreUI();updateCardLimitUI();
+    }
     window.addEventListener('message',event=>{
         if(event.source!==window.parent||!event.data) return;
-        if(event.data.type==='truth-show-shop') document.documentElement.classList.add('shop-only-mode');
-        if(event.data.type==='truth-show-canvas') document.documentElement.classList.remove('shop-only-mode');
+        if(event.data.type==='truth-show-shop') setIntegratedPanelMode('shop');
+        if(event.data.type==='truth-show-canvas') setIntegratedPanelMode('canvas');
         if(event.data.type==='story-grant-card') grantStoryCard(event.data.cardId);
+        if(event.data.type==='story-remove-card') removeStoryCard(event.data.cardId);
         if(event.data.type==='story-grant-ending') grantStoryEnding(event.data.cardId,event.data.bonuses,event.data.source);
         if(event.data.type==='story-set-gold'){
             state.gold=Math.max(0,Number(event.data.gold)||0);
             updateGoldUI(); renderShop();
         }
     });
+    if(integratedMode&&new URLSearchParams(window.location.search).get('view')==='shop') setIntegratedPanelMode('shop');
 
 
     function getCardDef(id){return ALL_CARDS[id];}
@@ -648,9 +633,11 @@
             span.className=`tier-buff tier-${maxT}`;
             const reqMap={1:1,2:3,3:5,4:7,5:10};
             const tiers=[];for(let t=1;t<=maxT;t++)tiers.push(t);
-            const desc=tiers.map(t=>`Tier ${t}（要求${reqMap[t]}张）：${getBuffDescription(fk,t)}`).join('\n');
-            const debugNote = (state.debugEndingCounts[fk]>0) ? '\n[DEBUG] 含虚拟数量 '+state.debugEndingCounts[fk]+' 张' : '';
-            span.title=`${FACTION_NAMES[fk]}阵营进度：${n}/10\n已解锁最高梯度：Tier ${maxT}\n${desc}${debugNote}`;
+            const desc=tiers.map(t=>`Tier ${t}（要求${reqMap[t]}张）：${getBuffDescription(fk,t)}`).join(String.fromCharCode(10));
+            const debugNote = (state.debugEndingCounts[fk]>0) ? String.fromCharCode(10)+'[DEBUG] 含虚拟数量 '+state.debugEndingCounts[fk]+' 张' : '';
+            span.title=`${FACTION_NAMES[fk]}阵营进度：${n}/10
+已解锁最高梯度：Tier ${maxT}
+${desc}${debugNote}`;
             span.innerHTML=`<span class="tier-icon">${FACTION_ICONS[fk]}</span><span class="tier-name">${FACTION_NAMES[fk]}</span><span class="tier-level">${n}/10 T${maxT}</span>`;
             buffContainer.appendChild(span);
         });
@@ -667,14 +654,14 @@
         const g={1:'阵营羁绊Lv.1',2:'阵营羁绊Lv.2',3:'阵营羁绊Lv.3',4:'阵营羁绊Lv.4',5:'阵营羁绊Lv.5'};return g[tier]||'';
     }
 
-    function createCardElement(cardId){const def=getCardDef(cardId);const el=document.createElement('div');el.className=`card ${def.type}`;el.draggable=true;el.dataset.cardId=cardId;el.title=def.name;
+    function createCardElement(cardId){const def=getCardDef(cardId);const el=document.createElement('div');el.className=`card ${def.type}`;el.draggable=true;el.dataset.cardId=cardId;el.title=def.name+(def.description?String.fromCharCode(10)+def.description:'');
         let bon=def.bonuses||[];if(def.type==='ending'&&state.endingBonuses[cardId])bon=state.endingBonuses[cardId];
         let bonusHtml='';if(bon&&bon.length>0){const dots=bon.map(b=>`<span class="bonus-dot ${b.faction}"></span>`).join('');bonusHtml=`<span class="bonus-indicator">${dots}</span>`;}
         let catHtml='';if(def.type==='ending'){const cat=getEndingCategory(bon);let label='';if(cat.type==='single')label=FACTION_NAMES[cat.factions[0]]+'系';else if(cat.type==='dual')label=cat.factions.map(f=>FACTION_NAMES[f]).join('+')+'双系';else label='无阵营';catHtml=`<span class="ending-category ${cat.type}">${label}</span>`;}
         el.innerHTML=`<span class="card-type-tag">${TYPE_LABELS[def.type]}</span><span class="card-name">${def.displayName}</span>${bonusHtml}${catHtml}`;
         el.addEventListener('dragstart',handleDragStart);el.addEventListener('dragend',handleDragEnd);
         el.addEventListener('click',e=>{if(e.target.closest('.sell-btn'))return;if(state.activeButton)tryAddToPanel(cardId);else showToast('请先选择一个执行按钮','error');});return el;}
-    function createSellableClueElement(clueId){const def=getCardDef(clueId);const el=document.createElement('div');el.className='card clue';el.draggable=true;el.dataset.cardId=clueId;el.title=def.name;
+    function createSellableClueElement(clueId){const def=getCardDef(clueId);const el=document.createElement('div');el.className='card clue';el.draggable=true;el.dataset.cardId=clueId;el.title=def.name+(def.description?String.fromCharCode(10)+def.description:'');
         let bonusHtml='';if(def.bonuses&&def.bonuses.length>0){const dots=def.bonuses.map(b=>`<span class="bonus-dot ${b.faction}"></span>`).join('');bonusHtml=`<span class="bonus-indicator">${dots}</span>`;}
         const sellPrice=state.clueSellPrice+(getEconomyTier()>=2?1:0);
         el.innerHTML=`<span class="card-type-tag">线索</span><span class="card-name">${def.displayName}</span>${bonusHtml}<button class="sell-btn">卖${sellPrice}</button>`;
@@ -817,13 +804,9 @@
             if(!rule){showToast('无法合成结局','error');return;}
             if(rule.truthId!==tid){showToast(`「${displayName(kid)}」需要搭配对应的真相卡`,'error');return;}
             if(isObtained(rule.resultId)){showToast('结局已获得','error');return;}
-            const total=getTotalScores()[currentFaction];if(total<1){showToast('分数不足','error');return;}
-            state.baseScores[currentFaction]-=1;flashScore(currentFaction);
             state.hand.truth=state.hand.truth.filter(x=>x!==tid);state.obtainedCards.delete(tid);
             state.hand['key-question']=state.hand['key-question'].filter(x=>x!==kid);state.obtainedCards.delete(kid);
-            const kqDef=getCardDef(kid);const kb=kqDef.bonuses||[];const nb={};
-            kb.forEach(b=>{nb[b.faction]=(nb[b.faction]||0)+b.amount;});nb[currentFaction]=(nb[currentFaction]||0)+1;
-            const bonusArray=FACTION_KEYS.filter(f=>nb[f]>0).map(f=>({faction:f,amount:nb[f]}));
+            const kqDef=getCardDef(kid);const bonusArray=[...(kqDef?.bonuses||[])];
             state.endingBonuses[rule.resultId]=bonusArray;state.endingSources[rule.resultId]={truthId:tid,kqId:kid};
             state.obtainedCards.add(rule.resultId);state.hand.ending.push(rule.resultId);
             showToast(`✅ 获得结局卡「${displayName(rule.resultId)}」`,'success');
